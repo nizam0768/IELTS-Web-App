@@ -1,0 +1,36 @@
+﻿@page "/dashboared"
+@rendermode InteractiveServer
+<div class="card border-success mb-3" style="max-width: 18rem;">
+    @if (!showDefinition)
+    {
+        <div class="card-body text-center">
+            <h5 class="card-title">avarice</h5>
+            <p>(verb)</p>
+            <p>DEEM</p>
+        </div>
+        <div class="card-footer bg-success border-success text-center">
+            <button class="btn" @onclick="ToggleCard">Press to see meaning -></button>
+        </div>
+    }
+    else
+    {
+        <div class="card-body">
+            <h5 class="card-title text-center">Definition: Judge; consider</h5>
+            <p class="card-text">Usage: "You can take the black belt exam when I deem you ready, and not a moment before," said the karate instructor.</p>
+            <p>Related Words: Assay (examine, analyze, judge)</p>
+        </div>
+        <div class="card-footer bg-success border-success text-center">
+            <button class="btn btn-light">I knew this word</button>
+        </div>
+    }
+</div>
+@code {
+    private int currentCount = 0;
+    private bool showDefinition = false;
+
+    private void ToggleCard()
+    {
+        showDefinition = !showDefinition;
+    }
+}
+

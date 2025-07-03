@@ -1,0 +1,1 @@
+The IELTS Web App is designed to help you practice and improve the vocabulary required for the IELTS exam. It offers an interactive and structured way to accelerate your learning and boost your preparation. Whether you're aiming for academic or general training, this app supports your journey with focused vocabulary practice tailored to IELTS standards.

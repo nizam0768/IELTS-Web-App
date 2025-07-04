@@ -1,5 +1,5 @@
 ﻿using IELTS.Entity_Models.Entity_Config;
-using IELTS.Entity_Models.Models;
+using IELTS.EntityModels.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Design;
@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System.Linq.Expressions;
 using System.Text;
 
-namespace IELTS.Entity_Models
+namespace IELTS.EntityModels
 {
     public class IELTSStoreDbContext : DbContext
     {

@@ -1,4 +1,4 @@
-﻿namespace IELTS.Entity_Models.Models
+﻿namespace IELTS.EntityModels.Models
 {
     public class WordMeaning
     {

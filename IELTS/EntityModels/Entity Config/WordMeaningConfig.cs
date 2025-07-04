@@ -1,4 +1,4 @@
-﻿using IELTS.Entity_Models.Models;
+﻿using IELTS.EntityModels.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

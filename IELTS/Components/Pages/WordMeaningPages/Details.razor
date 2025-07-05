@@ -1,0 +1,70 @@
+﻿@page "/wordmeanings/details"
+@using Microsoft.EntityFrameworkCore
+@using IELTS.EntityModels.Models
+@inject IDbContextFactory<IELTS.EntityModels.IELTSStoreDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h2>WordMeaning</h2>
+    <hr />
+    @if (wordmeaning is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">Word</dt>
+            <dd class="col-sm-10">@wordmeaning.Word</dd>
+            <dt class="col-sm-2">PartofSpeech</dt>
+            <dd class="col-sm-10">@wordmeaning.PartofSpeech</dd>
+            <dt class="col-sm-2">Pronunciation</dt>
+            <dd class="col-sm-10">@wordmeaning.Pronunciation</dd>
+            <dt class="col-sm-2">Definition</dt>
+            <dd class="col-sm-10">@wordmeaning.Definition</dd>
+            <dt class="col-sm-2">Usage</dt>
+            <dd class="col-sm-10">@wordmeaning.Usage</dd>
+            <dt class="col-sm-2">RelatedWords</dt>
+            <dd class="col-sm-10">@wordmeaning.RelatedWords</dd>
+            <dt class="col-sm-2">MoreInfo</dt>
+            <dd class="col-sm-10">@wordmeaning.MoreInfo</dd>
+            <dt class="col-sm-2">CreatedBy</dt>
+            <dd class="col-sm-10">@wordmeaning.CreatedBy</dd>
+            <dt class="col-sm-2">UpdatedBy</dt>
+            <dd class="col-sm-10">@wordmeaning.UpdatedBy</dd>
+            <dt class="col-sm-2">DeletedBy</dt>
+            <dd class="col-sm-10">@wordmeaning.DeletedBy</dd>
+            <dt class="col-sm-2">CreatedOn</dt>
+            <dd class="col-sm-10">@wordmeaning.CreatedOn</dd>
+            <dt class="col-sm-2">UpdatedOn</dt>
+            <dd class="col-sm-10">@wordmeaning.UpdatedOn</dd>
+            <dt class="col-sm-2">DeletedOn</dt>
+            <dd class="col-sm-10">@wordmeaning.DeletedOn</dd>
+        </dl>
+        <div>
+            <a href="@($"/wordmeanings/edit?id={wordmeaning.Id}")">Edit</a> |
+            <a href="@($"/wordmeanings")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    private WordMeaning? wordmeaning;
+
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        wordmeaning = await context.WordMeanings.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (wordmeaning is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}

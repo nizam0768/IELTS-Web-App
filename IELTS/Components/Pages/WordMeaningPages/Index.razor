@@ -1,0 +1,49 @@
+﻿@page "/wordmeanings"
+@using Microsoft.EntityFrameworkCore
+@using IELTS.EntityModels.Models
+@using IELTS.EntityModels
+@implements IAsyncDisposable
+@inject IDbContextFactory<IELTS.EntityModels.IELTSStoreDbContext> DbFactory
+
+<PageTitle>Index</PageTitle>
+
+<h1>Index</h1>
+
+<p>
+    <a href="wordmeanings/create">Create New</a>
+</p>
+
+@using MudBlazor
+
+<MudDataGrid Items="context.WordMeanings">
+    <Columns>
+        <PropertyColumn Property="x => x.Word" />
+        <PropertyColumn Property="x => x.PartofSpeech" />
+        <PropertyColumn Property="x => x.Pronunciation" />
+        <PropertyColumn Property="x => x.Definition" />
+        <TemplateColumn Title="Actions">
+            <CellTemplate>
+                <MudText>
+                    <a href="@($"wordmeanings/edit?id={context.Item.Id}")">Edit</a> |
+                    <a href="@($"wordmeanings/details?id={context.Item.Id}")">Details</a> |
+                    <a href="@($"wordmeanings/delete?id={context.Item.Id}")">Delete</a>
+                </MudText>
+            </CellTemplate>
+        </TemplateColumn>      
+    </Columns>
+    <PagerContent>
+        <MudDataGridPager T="WordMeaning" />
+    </PagerContent>
+</MudDataGrid>
+
+
+@code {
+    private IELTSStoreDbContext context = default!;
+    //private IEnumerable<WordMeaning> Elements = new List<WordMeaning>();
+    protected override void OnInitialized()
+    {
+        context = DbFactory.CreateDbContext();
+    }
+
+    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}

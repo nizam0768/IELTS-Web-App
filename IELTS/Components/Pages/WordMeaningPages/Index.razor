@@ -24,9 +24,9 @@
         <TemplateColumn Title="Actions">
             <CellTemplate>
                 <MudText>
-                    <a href="@($"wordmeanings/edit?id={context.Item.Id}")">Edit</a> |
-                    <a href="@($"wordmeanings/details?id={context.Item.Id}")">Details</a> |
-                    <a href="@($"wordmeanings/delete?id={context.Item.Id}")">Delete</a>
+                    <a class="link-primary" href="@($"wordmeanings/edit?id={context.Item.Id}")">Edit</a> |
+                    <a class="link-info" href="@($"wordmeanings/details?id={context.Item.Id}")">Details</a> |
+                    <a class="link-danger" href="@($"wordmeanings/delete?id={context.Item.Id}")">Delete</a>
                 </MudText>
             </CellTemplate>
         </TemplateColumn>      

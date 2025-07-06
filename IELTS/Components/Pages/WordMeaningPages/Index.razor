@@ -1,6 +1,5 @@
 ﻿@page "/wordmeanings"
 @using Microsoft.EntityFrameworkCore
-@using Microsoft.AspNetCore.Components.QuickGrid
 @using IELTS.EntityModels.Models
 @using IELTS.EntityModels
 @implements IAsyncDisposable
@@ -16,49 +15,31 @@
 
 @using MudBlazor
 
-<MudTable Items="context.WordMeanings" Hover="true" Bordered="true" Striped="true">
-    <HeaderContent>
-        <MudTh>Word</MudTh>
-        <MudTh>Part of Speech</MudTh>
-        <MudTh>Pronunciation</MudTh>
-        <MudTh>Definition</MudTh>
-        <MudTh>Usage</MudTh>
-        <MudTh>Related Words</MudTh>
-        <MudTh>More Info</MudTh>
-        <MudTh>Created By</MudTh>
-        <MudTh>Updated By</MudTh>
-        <MudTh>Deleted By</MudTh>
-        <MudTh>Created On</MudTh>
-        <MudTh>Updated On</MudTh>
-        <MudTh>Deleted On</MudTh>
-        <MudTh>Actions</MudTh>
-    </HeaderContent>
-    <RowTemplate>
-        <MudTd DataLabel="Word">@context.Word</MudTd>
-        <MudTd DataLabel="Part of Speech">@context.PartofSpeech</MudTd>
-        <MudTd DataLabel="Pronunciation">@context.Pronunciation</MudTd>
-        <MudTd DataLabel="Definition">@context.Definition</MudTd>
-        <MudTd DataLabel="Usage">@context.Usage</MudTd>
-        <MudTd DataLabel="Related Words">@context.RelatedWords</MudTd>
-        <MudTd DataLabel="More Info">@context.MoreInfo</MudTd>
-        <MudTd DataLabel="Created By">@context.CreatedBy</MudTd>
-        <MudTd DataLabel="Updated By">@context.UpdatedBy</MudTd>
-        <MudTd DataLabel="Deleted By">@context.DeletedBy</MudTd>
-        <MudTd DataLabel="Created On">@context.CreatedOn</MudTd>
-        <MudTd DataLabel="Updated On">@context.UpdatedOn</MudTd>
-        <MudTd DataLabel="Deleted On">@context.DeletedOn</MudTd>
-        <MudTd DataLabel="Actions">
-            <a href="@($"wordmeanings/edit?id={context.Id}")">Edit</a> |
-            <a href="@($"wordmeanings/details?id={context.Id}")">Details</a> |
-            <a href="@($"wordmeanings/delete?id={context.Id}")">Delete</a>
-        </MudTd>
-    </RowTemplate>
-</MudTable>
+<MudDataGrid Items="context.WordMeanings">
+    <Columns>
+        <PropertyColumn Property="x => x.Word" />
+        <PropertyColumn Property="x => x.PartofSpeech" />
+        <PropertyColumn Property="x => x.Pronunciation" />
+        <PropertyColumn Property="x => x.Definition" />
+        <TemplateColumn Title="Actions">
+            <CellTemplate>
+                <MudText>
+                    <a href="@($"wordmeanings/edit?id={context.Item.Id}")">Edit</a> |
+                    <a href="@($"wordmeanings/details?id={context.Item.Id}")">Details</a> |
+                    <a href="@($"wordmeanings/delete?id={context.Item.Id}")">Delete</a>
+                </MudText>
+            </CellTemplate>
+        </TemplateColumn>      
+    </Columns>
+    <PagerContent>
+        <MudDataGridPager T="WordMeaning" />
+    </PagerContent>
+</MudDataGrid>
 
 
 @code {
     private IELTSStoreDbContext context = default!;
-
+    //private IEnumerable<WordMeaning> Elements = new List<WordMeaning>();
     protected override void OnInitialized()
     {
         context = DbFactory.CreateDbContext();

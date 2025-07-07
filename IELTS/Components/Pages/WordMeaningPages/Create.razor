@@ -53,33 +53,7 @@
             <div class="mb-3">
                 <label for="createdby" class="form-label">CreatedBy:</label> 
                 <InputText id="createdby" @bind-Value="WordMeaning.CreatedBy" class="form-control" /> 
-                <ValidationMessage For="() => WordMeaning.CreatedBy" class="text-danger" /> 
-            </div>        
-            <div class="mb-3">
-                <label for="updatedby" class="form-label">UpdatedBy:</label> 
-                <InputText id="updatedby" @bind-Value="WordMeaning.UpdatedBy" class="form-control" /> 
-                <ValidationMessage For="() => WordMeaning.UpdatedBy" class="text-danger" /> 
-            </div>        
-            <div class="mb-3">
-                <label for="deletedby" class="form-label">DeletedBy:</label> 
-                <InputText id="deletedby" @bind-Value="WordMeaning.DeletedBy" class="form-control" /> 
-                <ValidationMessage For="() => WordMeaning.DeletedBy" class="text-danger" /> 
-            </div>        
-            <div class="mb-3">
-                <label for="createdon" class="form-label">CreatedOn:</label> 
-                <InputDate id="createdon" @bind-Value="WordMeaning.CreatedOn" class="form-control" /> 
-                <ValidationMessage For="() => WordMeaning.CreatedOn" class="text-danger" /> 
-            </div>        
-            <div class="mb-3">
-                <label for="updatedon" class="form-label">UpdatedOn:</label> 
-                <InputDate id="updatedon" @bind-Value="WordMeaning.UpdatedOn" class="form-control" /> 
-                <ValidationMessage For="() => WordMeaning.UpdatedOn" class="text-danger" /> 
-            </div>        
-            <div class="mb-3">
-                <label for="deletedon" class="form-label">DeletedOn:</label> 
-                <InputDate id="deletedon" @bind-Value="WordMeaning.DeletedOn" class="form-control" /> 
-                <ValidationMessage For="() => WordMeaning.DeletedOn" class="text-danger" /> 
-            </div>        
+            </div>                                
             <button type="submit" class="btn btn-primary">Create</button>
         </EditForm>
     </div>
@@ -97,6 +71,7 @@
     private async Task AddWordMeaning()
     {
         using var context = DbFactory.CreateDbContext();
+        WordMeaning.CreatedOn = DateTime.UtcNow;
         context.WordMeanings.Add(WordMeaning);
         await context.SaveChangesAsync();
         NavigationManager.NavigateTo("/wordmeanings");

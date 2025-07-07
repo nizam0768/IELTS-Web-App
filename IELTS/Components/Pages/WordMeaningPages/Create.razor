@@ -1,0 +1,79 @@
+﻿@page "/wordmeanings/create"
+@using Microsoft.EntityFrameworkCore
+@using IELTS.EntityModels.Models
+@inject IDbContextFactory<IELTS.EntityModels.IELTSStoreDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h2>WordMeaning</h2>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="WordMeaning" OnValidSubmit="AddWordMeaning" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert"/>
+            <div class="mb-3">
+                <label for="word" class="form-label">Word:</label> 
+                <InputText id="word" @bind-Value="WordMeaning.Word" class="form-control" /> 
+                <ValidationMessage For="() => WordMeaning.Word" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="partofspeech" class="form-label">PartofSpeech:</label> 
+                <InputText id="partofspeech" @bind-Value="WordMeaning.PartofSpeech" class="form-control" /> 
+                <ValidationMessage For="() => WordMeaning.PartofSpeech" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="pronunciation" class="form-label">Pronunciation:</label> 
+                <InputText id="pronunciation" @bind-Value="WordMeaning.Pronunciation" class="form-control" /> 
+                <ValidationMessage For="() => WordMeaning.Pronunciation" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="definition" class="form-label">Definition:</label> 
+                <InputText id="definition" @bind-Value="WordMeaning.Definition" class="form-control" /> 
+                <ValidationMessage For="() => WordMeaning.Definition" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="usage" class="form-label">Usage:</label> 
+                <InputText id="usage" @bind-Value="WordMeaning.Usage" class="form-control" /> 
+                <ValidationMessage For="() => WordMeaning.Usage" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="relatedwords" class="form-label">RelatedWords:</label> 
+                <InputText id="relatedwords" @bind-Value="WordMeaning.RelatedWords" class="form-control" /> 
+                <ValidationMessage For="() => WordMeaning.RelatedWords" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="moreinfo" class="form-label">MoreInfo:</label> 
+                <InputText id="moreinfo" @bind-Value="WordMeaning.MoreInfo" class="form-control" /> 
+                <ValidationMessage For="() => WordMeaning.MoreInfo" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="createdby" class="form-label">CreatedBy:</label> 
+                <InputText id="createdby" @bind-Value="WordMeaning.CreatedBy" class="form-control" /> 
+            </div>                                
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/wordmeanings">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private WordMeaning WordMeaning { get; set; } = new();
+
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task AddWordMeaning()
+    {
+        using var context = DbFactory.CreateDbContext();
+        WordMeaning.CreatedOn = DateTime.UtcNow;
+        context.WordMeanings.Add(WordMeaning);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/wordmeanings");
+    }
+}

@@ -18,9 +18,9 @@ namespace IELTS.Entity_Models.Entity_Config
             builder.Property(x => x.Usage).HasColumnType("nvarchar(500)").IsRequired();
             builder.Property(x => x.RelatedWords).HasColumnType("nvarchar(500)").IsRequired();
             builder.Property(x => x.MoreInfo).HasColumnType("nvarchar(500)").IsRequired();
-            builder.Property(x => x.CreatedBy).HasColumnType("nvarchar(50)").IsRequired();
-            builder.Property(x => x.UpdatedBy).HasColumnType("nvarchar(50)").IsRequired();
-            builder.Property(x => x.DeletedBy).HasColumnType("nvarchar(50)").IsRequired();
+            builder.Property(x => x.CreatedBy).HasColumnType("nvarchar(50)");
+            builder.Property(x => x.UpdatedBy).HasColumnType("nvarchar(50)");
+            builder.Property(x => x.DeletedBy).HasColumnType("nvarchar(50)");
             builder.Property(x => x.CreatedOn).HasColumnType("datetime");
             builder.Property(x => x.UpdatedOn).HasColumnType("datetime");
             builder.Property(x => x.DeletedOn).HasColumnType("datetime");

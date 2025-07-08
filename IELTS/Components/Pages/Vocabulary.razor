@@ -90,6 +90,7 @@
             currentIndex = (currentIndex + 1) % wordMeanings.Count;
         }
     }
+
     private void PrevWord()
     {
         showDefinition = false;
@@ -98,7 +99,6 @@
             currentIndex = (currentIndex - 1) % wordMeanings.Count;
         }
     }
-
     protected override async Task OnInitializedAsync()
     {
         context = DbFactory.CreateDbContext();

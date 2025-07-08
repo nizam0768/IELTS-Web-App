@@ -2,18 +2,13 @@
 @using Microsoft.EntityFrameworkCore
 @using IELTS.EntityModels.Models
 @using IELTS.EntityModels
+@using MudBlazor
 @implements IAsyncDisposable
 @inject IDbContextFactory<IELTS.EntityModels.IELTSStoreDbContext> DbFactory
 
 <PageTitle>Index</PageTitle>
 
-<h1>Index</h1>
-
-<p>
-    <a href="wordmeanings/create">Create New</a>
-</p>
-
-@using MudBlazor
+<h1>Word Meaning</h1>
 
 <MudDataGrid Items="context.WordMeanings">
     <Columns>

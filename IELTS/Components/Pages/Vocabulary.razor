@@ -17,7 +17,7 @@
     else
     {
         var word = wordMeanings[currentIndex];
-        <div class="card border-success mb-3" style="width: 29rem; height: 15rem">
+        <div class="card border-success mb-3" style="width: 32rem; height: 17rem">
             @if (!showDefinition)
             {
                 <div class="card-body">
@@ -55,8 +55,17 @@
                     </div>
                 </div>
                 <div class="card-footer border-success text-center" style="background-color: #dcdcdc">
-                    <button @onclick="ToggleCard" type="button"><MudIcon Icon="@Icons.Material.Filled.ChevronLeft" Style="font-size: 2rem;" /></button>
-                    <button @onclick="NextWord" type="button">Next<MudIcon Icon="@Icons.Material.Filled.ChevronRight" Style="font-size: 2rem;" /></button>
+                    <div class="row row-cols-4">
+                        <div class="col">
+                            <button @onclick="PrevWord" type="button"><MudIcon Icon="@Icons.Material.Filled.ChevronLeft" Style="font-size: 2rem;" />Prev</button>
+                        </div>
+                        <div class="col-6">
+                            <button @onclick="ToggleCard" type="button"><MudIcon Icon="@Icons.Material.TwoTone.ArrowCircleLeft" Style="font-size: 2rem;" />&nbsp Press to see word</button>
+                        </div>
+                        <div class="col">
+                            <button @onclick="NextWord" type="button">Next<MudIcon Icon="@Icons.Material.Filled.ChevronRight" Style="font-size: 2rem;" /></button>
+                        </div>
+                    </div>
                 </div>
             }
         </div>
@@ -82,6 +91,14 @@
         }
     }
 
+    private void PrevWord()
+    {
+        showDefinition = false;
+        if (wordMeanings is not null && currentIndex != 0 && wordMeanings.Count > 0)
+        {
+            currentIndex = (currentIndex - 1) % wordMeanings.Count;
+        }
+    }
     protected override async Task OnInitializedAsync()
     {
         context = DbFactory.CreateDbContext();

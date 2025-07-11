@@ -7,15 +7,20 @@
 @inject IDbContextFactory<IELTS.EntityModels.IELTSStoreDbContext> DbFactory
 
 <PageTitle>Index</PageTitle>
-
-<h1>Word Meaning</h1>
-
-<MudDataGrid Items="context.WordMeanings">
+<div class="row">
+    <div class="col-sm-10">
+        <h1>Word Meaning</h1>
+    </div>
+    <div class="col-sm-2">
+        <a class="btn btn-primary" href="wordmeanings/create">Create New</a>
+    </div>
+</div>
+<MudDataGrid Items="context.WordMeanings" ColumnResizeMode="ResizeMode.Container">
     <Columns>
         <PropertyColumn Property="x => x.Word" />
         <PropertyColumn Property="x => x.PartofSpeech" />
-        <PropertyColumn Property="x => x.Pronunciation" />
-        <PropertyColumn Property="x => x.Definition" />
+        <PropertyColumn Property="x => x.Pronunciation" CellStyle="max-width: 250px; min-width: 200px;" />
+        <PropertyColumn Property="x => x.Definition" CellStyle="max-width: 250px; min-width: 200px;" />
         <TemplateColumn Title="Actions">
             <CellTemplate>
                 <MudText>

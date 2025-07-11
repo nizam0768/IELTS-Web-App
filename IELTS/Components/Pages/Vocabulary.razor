@@ -90,6 +90,14 @@
             currentIndex = (currentIndex + 1) % wordMeanings.Count;
         }
     }
+    private void PrevWord()
+    {
+        showDefinition = false;
+        if (wordMeanings is not null && currentIndex != 0 && wordMeanings.Count > 0)
+        {
+            currentIndex = (currentIndex - 1) % wordMeanings.Count;
+        }
+    }
 
     private void PrevWord()
     {

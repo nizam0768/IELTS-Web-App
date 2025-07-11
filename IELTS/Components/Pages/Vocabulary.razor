@@ -99,6 +99,14 @@
         }
     }
 
+    private void PrevWord()
+    {
+        showDefinition = false;
+        if (wordMeanings is not null && currentIndex != 0 && wordMeanings.Count > 0)
+        {
+            currentIndex = (currentIndex - 1) % wordMeanings.Count;
+        }
+    }
     protected override async Task OnInitializedAsync()
     {
         context = DbFactory.CreateDbContext();

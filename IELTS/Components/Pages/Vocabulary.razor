@@ -24,7 +24,7 @@
                     {
                         <div class="card-body">
                             <div class="text-end">
-                                <label style="background-color:#dcdcdc">New Word</label>
+                                <label class="@wordLabelCss">@wordLabel</label>
                             </div>
                             <div class="text-center">
                                 <h5 class="card-title">@word.Word</h5>
@@ -86,8 +86,11 @@
     private List<WordMeaning>? wordMeanings;
     private int currentIndex = 0;
     private Queue<int> replayIndex = new Queue<int>();
-    private int displayCountCheckForReplay = 0;
+    private int displayCountCheckForReplay = 0, queueCount =0, replayCounter = 0;
     private int index = 0;
+    private string wordLabel = "New Word";
+    private string wordLabelCss = "word-label";
+    private bool flag = false;
     private void ToggleCard()
     {
         showDefinition = !showDefinition;
@@ -101,8 +104,20 @@
         {
             if(displayCountCheckForReplay != 2)
             {
+                if (currentIndex == wordMeanings.Count-1)
+                {
+                    flag = true;
+                    replayCounter++;
+                }
                 currentIndex = (currentIndex + 1) % wordMeanings.Count;
                 index = currentIndex;
+                wordLabel = !flag ? "New Word" : "Replay Word";
+                wordLabelCss = !flag ? "word-label" : "word-label-replay";
+                if(replayCounter > 3)
+                {
+                    wordLabel = "Word Masterd";
+                    wordLabelCss = "word-label-success";
+                }
                 if (replayIndex.Count > 0)
                 {
                     displayCountCheckForReplay++;
@@ -111,7 +126,16 @@
             else
             {
                 index = replayIndex.Peek();
-                replayIndex.Dequeue();
+                wordLabel = "Queue Word";
+                wordLabelCss = "word-label-queue"; 
+                queueCount++;
+                if(queueCount == 2)
+                {
+                    replayIndex.Dequeue();
+                    wordLabel = "Word Masterd";
+                    wordLabelCss = "word-label-success";
+                    queueCount = 0;
+                }
                 displayCountCheckForReplay = 0;
             }
 
@@ -124,6 +148,8 @@
         {
             currentIndex = (currentIndex - 1) % wordMeanings.Count;
         }
+        wordLabel = "Replay Word";
+        wordLabelCss = "word-label-replay";
     }
     private void ReplayWord()
     {

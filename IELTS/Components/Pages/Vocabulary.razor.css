@@ -1,0 +1,19 @@
+﻿.word-label {
+    padding: 2px;
+    background-color: #dcdcdc;
+}
+.word-label-queue {
+    padding: 2px;
+    color: azure;
+    background-color: #FFDE59;
+}
+.word-label-success {
+    padding: 2px;
+    color: azure;
+    background-color: #7DDA58;
+}
+.word-label-replay {
+    padding:2px;
+    color: azure;
+    background-color: #FE9900;
+}

@@ -20,6 +20,7 @@ namespace IELTS.EntityModels.Models
         public string RelatedWords { get; set; }
         [Required]
         public string MoreInfo { get; set; }
+        [EmailAddress(ErrorMessage = "Invalid email format.")]
         public string? CreatedBy { get; set; }
         public string? UpdatedBy { get; set; }
         public string? DeletedBy { get; set; }

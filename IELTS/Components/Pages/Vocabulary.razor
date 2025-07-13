@@ -19,7 +19,7 @@
             else
             {
                 var word = wordMeanings[index];
-                <div class="card border-success mb-3" style="width: 32rem; height: 17rem">
+                <div class="card border-success mb-3" style="width: 32rem; height: 17rem" tabindex="0" @onkeydown="HandleKeyDown">
                     @if (!showDefinition)
                     {
                         <div class="card-body">
@@ -27,33 +27,34 @@
                                 <label class="@wordLabelCss">@wordLabel</label>
                             </div>
                             <div class="text-center">
-                                <h5 class="card-title">@word.Word</h5>
-                                <p>(@word.PartofSpeech)</p>
-                                <p>@word.Pronunciation</p>
+                                <h5 class="card-title">@(word.Word ?? "NA")</h5>
+                                <p>(@(word.PartofSpeech ?? "NA"))</p>
+                                <p>@(word.Pronunciation ?? "NA")</p>
                             </div>
                         </div>
                         <div class="card-footer border-success text-center" style="background-color:#dcdcdc">
                             <button style="display:inline" @onclick="ToggleCard" type="button">Press to see meaning <MudIcon Icon="@Icons.Material.TwoTone.ArrowCircleRight" Style="font-size: 2rem;" /></button>
-                        </div>
+@*                             <input @onkeydown="HandleKeyDown" placeholder="Press → key" />
+ *@                        </div>
                     }
                     else
                     {
                         <div class="card-body">
                             <div>
                                 <p class="card-title" style="color:red; display:inline">Definition:</p>
-                                <p class="card-text" style="display:inline; font-size: 13px;">@word.Definition</p>
+                                <p class="card-text" style="display:inline; font-size: 13px;">@(word.Definition ?? "NA")</p>
                             </div>
                             <div>
                                 <p class="card-text" style="color:red; display:inline">Usage:</p>
-                                <p class="card-text" style="display:inline; font-size: 13px;">@word.Usage</p>
+                                <p class="card-text" style="display:inline; font-size: 13px;">@(word.Usage ?? "NA")</p>
                             </div>
                             <div>
                                 <p class="card-text" style="color:red; display:inline">Related Words:</p>
-                                <p class="card-text" style="display:inline; font-size: 13px;">@word.RelatedWords</p>
+                                <p class="card-text" style="display:inline; font-size: 13px;">@(word.RelatedWords ?? "NA")</p>
                             </div>
                             <div>
                                 <p class="card-text" style="color:red; display:inline">More Info:</p>
-                                <p class="card-text" style="display:inline; font-size: 13px;">@word.MoreInfo</p>
+                                <p class="card-text" style="display:inline; font-size: 13px;">@(word.MoreInfo ?? "NA")</p>
                             </div>
                         </div>
                         <div class="card-footer border-success text-center" style="background-color: #dcdcdc">
@@ -144,9 +145,9 @@
     private void PrevWord()
     {
         showDefinition = false;
-        if (wordMeanings is not null && currentIndex != 0 && wordMeanings.Count > 0)
+        if (wordMeanings is not null && wordMeanings.Count > 0)
         {
-            currentIndex = (currentIndex - 1) % wordMeanings.Count;
+            currentIndex = (currentIndex - 1 + wordMeanings.Count) % wordMeanings.Count;
         }
         wordLabel = "Replay Word";
         wordLabelCss = "word-label-replay";
@@ -154,6 +155,22 @@
     private void ReplayWord()
     {
         replayIndex.Enqueue(currentIndex);
+    }
+    private void HandleKeyDown(KeyboardEventArgs e)
+    {
+        // Right Arrow or Enter for NextWord, Left Arrow for PrevWord, Space for ToggleCard
+        if (e.Key == "ArrowRight" || e.Key == "Enter")
+        {
+            NextWord();
+        }
+        else if (e.Key == "ArrowLeft")
+        {
+            PrevWord();
+        }
+        else if (e.Key == " ")
+        {
+            ToggleCard();
+        }
     }
     protected override async Task OnInitializedAsync()
     {

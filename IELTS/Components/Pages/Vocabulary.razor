@@ -145,9 +145,10 @@
     private void PrevWord()
     {
         showDefinition = false;
-        if (wordMeanings is not null && wordMeanings.Count > 0)
+        if (wordMeanings is not null && currentIndex > 0 && wordMeanings.Count > 0)
         {
             currentIndex = (currentIndex - 1 + wordMeanings.Count) % wordMeanings.Count;
+            index = currentIndex;
         }
         wordLabel = "Replay Word";
         wordLabelCss = "word-label-replay";

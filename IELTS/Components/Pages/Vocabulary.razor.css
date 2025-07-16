@@ -17,3 +17,33 @@
     color: azure;
     background-color: #FE9900;
 }
+/* Custom checkbox container */
+.custom-check {
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+}
+
+    /* Checkbox input */
+    .custom-check .form-check-input {
+        accent-color: #007bff; /* Modern browsers support this */
+        width: 18px;
+        height: 18px;
+        margin-right: 10px;
+        cursor: pointer;
+    }
+
+    /* Label styling */
+    .custom-check .form-check-label {
+        font-weight: 600;
+        font-size: 16px;
+        color: #333;
+        cursor: pointer;
+    }
+
+    /* Hover effect */
+    .custom-check:hover {
+        background-color: #eef3ff;
+    }
+

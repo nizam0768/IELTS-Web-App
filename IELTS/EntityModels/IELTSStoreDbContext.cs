@@ -33,6 +33,7 @@ namespace IELTS.EntityModels
             }
         }
         public DbSet<WordMeaning> WordMeanings { get; set; }
+        public DbSet<MyFavoriteWords> MyFavoriteWords { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

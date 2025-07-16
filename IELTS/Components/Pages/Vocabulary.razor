@@ -75,6 +75,12 @@
             }
         </div>
         <div class="col-lg-3">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="" id="checkDefault" @onchange="OnFavoriteChanged">
+                <label class="form-check-label" for="checkDefault">
+                    My Favorite Word
+                </label>
+            </div><br />
             <button class="btn btn-outline-danger" @onclick="ReplayWord">I don't this word</button><br /><br />
             <button class="btn btn-outline-success" @onclick="NextWord">I know this word</button>
         </div>
@@ -85,6 +91,7 @@
     private bool showDefinition = false;
     private IELTSStoreDbContext context = default!;
     private List<WordMeaning>? wordMeanings;
+    private MyFavoriteWords? myFavoriteWords = new MyFavoriteWords();
     private int currentIndex = 0;
     private Queue<int> replayIndex = new Queue<int>();
     private int displayCountCheckForReplay = 0, queueCount =0, replayCounter = 0;
@@ -96,7 +103,6 @@
     {
         showDefinition = !showDefinition;
     }
-
     private void NextWord()
     {
 
@@ -182,4 +188,24 @@
             NavigationManager.NavigateTo("notfound");
         }
     }
+    private async Task OnFavoriteChanged(ChangeEventArgs changeEventArgs)
+    {
+        if(changeEventArgs.Value.Equals(true))
+        {
+            AddToMyFavorite();
+        }
+    }
+    private async Task AddToMyFavorite()
+    {
+        if (wordMeanings.Count > 0)
+        {
+            var word = wordMeanings[index];
+
+            myFavoriteWords.WordId = word.Id;
+            context.MyFavoriteWords.Add(myFavoriteWords);
+            await context.SaveChangesAsync();
+        }
+        return;
+    }
+
 }

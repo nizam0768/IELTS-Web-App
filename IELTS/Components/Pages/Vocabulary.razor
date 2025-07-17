@@ -4,6 +4,7 @@
 @using IELTS.EntityModels.Models
 @using IELTS.EntityModels
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JS
 @inject IDbContextFactory<IELTS.EntityModels.IELTSStoreDbContext> DbFactory
 <div class="container">
     <div class="row justify-content-md-center">
@@ -188,24 +189,41 @@
             NavigationManager.NavigateTo("notfound");
         }
     }
-    private async Task OnFavoriteChanged(ChangeEventArgs changeEventArgs)
+    private async Task OnFavoriteChanged(ChangeEventArgs changeEventArgs)  
+    {  
+        if (changeEventArgs.Value is bool isMyFavoriteWord)  
+        {  
+            await MyFavoriteWord(isMyFavoriteWord);  
+        }  
+    }
+    private async Task MyFavoriteWord(bool isFavorite)
     {
-        if(changeEventArgs.Value.Equals(true))
+        var word = wordMeanings[index];
+        if (word == null) return;
+
+        var existingFavoriteWord = await context.MyFavoriteWords
+            .FirstOrDefaultAsync(m => m.WordId == word.Id);
+
+        if (isFavorite && existingFavoriteWord == null)
         {
-            AddToMyFavorite();
+            var newFavorite = new MyFavoriteWords { WordId = word.Id };
+            context.MyFavoriteWords.Add(newFavorite);
+            await SaveAndNotifyAsync("Word is added to favorite");
+        }
+        else if (!isFavorite && existingFavoriteWord != null)
+        {
+            context.MyFavoriteWords.Remove(existingFavoriteWord);
+            await SaveAndNotifyAsync("Word is removed from my favorite");
         }
     }
-    private async Task AddToMyFavorite()
+
+    private async Task SaveAndNotifyAsync(string message)
     {
-        if (wordMeanings.Count > 0)
-        {
-            var word = wordMeanings[index];
-
-            myFavoriteWords.WordId = word.Id;
-            context.MyFavoriteWords.Add(myFavoriteWords);
-            await context.SaveChangesAsync();
-        }
-        return;
+        await context.SaveChangesAsync();
+        await ShowPopUpAsync(message);
     }
-
+    private async Task ShowPopUpAsync(string message)
+    {
+        await JS.InvokeVoidAsync("alert", message);
+    }
 }

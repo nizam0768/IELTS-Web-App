@@ -77,7 +77,7 @@
         </div>
         <div class="col-lg-3">
             <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="" id="checkDefault" @onchange="OnFavoriteChanged">
+                <input class="form-check-input" type="checkbox" value="" id="checkDefault" @bind="isFavorite" @bind:event="onchange" disabled="@isFavoriteProcessing" />
                 <label class="form-check-label" for="checkDefault">
                     My Favorite Word
                 </label>
@@ -100,11 +100,18 @@
     private string wordLabel = "New Word";
     private string wordLabelCss = "word-label";
     private bool flag = false;
+    private bool isFavoriteProcessing = false;
+    private bool _isFavorite;
+    private bool isFavorite
+    {
+        get => _isFavorite;
+        set => UpdateFavorite(value);
+    }
     private void ToggleCard()
     {
         showDefinition = !showDefinition;
     }
-    private void NextWord()
+    private async Task NextWord()
     {
 
         showDefinition = false;
@@ -146,16 +153,17 @@
                 }
                 displayCountCheckForReplay = 0;
             }
-
+            isFavorite = await CheckIsFavoriteAsync();
         }
     }
-    private void PrevWord()
+    private async Task PrevWord()
     {
         showDefinition = false;
         if (wordMeanings is not null && currentIndex > 0 && wordMeanings.Count > 0)
         {
             currentIndex = (currentIndex - 1 + wordMeanings.Count) % wordMeanings.Count;
             index = currentIndex;
+            isFavorite = await CheckIsFavoriteAsync();
         }
         wordLabel = "Replay Word";
         wordLabelCss = "word-label-replay";
@@ -184,43 +192,58 @@
     {
         context = DbFactory.CreateDbContext();
         wordMeanings = await context.WordMeanings.ToListAsync();
-        if (wordMeanings is null)
+        if (wordMeanings is null || wordMeanings.Count == 0)
         {
             NavigationManager.NavigateTo("notfound");
         }
+        _isFavorite = await CheckIsFavoriteAsync();
     }
-    private async Task OnFavoriteChanged(ChangeEventArgs changeEventArgs)  
-    {  
-        if (changeEventArgs.Value is bool isMyFavoriteWord)  
-        {  
-            await MyFavoriteWord(isMyFavoriteWord);  
-        }  
+    private async Task<bool> CheckIsFavoriteAsync()
+    {
+        await using var checkIsFavoriteContext = DbFactory.CreateDbContext();
+        var word = wordMeanings.ElementAtOrDefault(index);
+        if (word == null) return false;
+
+        return await checkIsFavoriteContext.MyFavoriteWords.AnyAsync(f => f.WordId == word.Id);
+    }
+    private async void UpdateFavorite(bool value)
+    {
+        if (isFavoriteProcessing) return;
+
+        try
+        {
+            isFavoriteProcessing = true;
+            _isFavorite = value;
+            await MyFavoriteWord(value);
+        }
+        finally
+        {
+            isFavoriteProcessing = false;
+            StateHasChanged(); // refresh UI
+        }
     }
     private async Task MyFavoriteWord(bool isFavorite)
     {
+        await using var localContext = DbFactory.CreateDbContext();
         var word = wordMeanings[index];
         if (word == null) return;
 
-        var existingFavoriteWord = await context.MyFavoriteWords
+        var existingFavoriteWord = await localContext.MyFavoriteWords
             .FirstOrDefaultAsync(m => m.WordId == word.Id);
 
         if (isFavorite && existingFavoriteWord == null)
         {
             var newFavorite = new MyFavoriteWords { WordId = word.Id };
-            context.MyFavoriteWords.Add(newFavorite);
-            await SaveAndNotifyAsync("Word is added to favorite");
+            localContext.MyFavoriteWords.Add(newFavorite);
+            await localContext.SaveChangesAsync();
+            await ShowPopUpAsync("Word is added to favorite");
         }
         else if (!isFavorite && existingFavoriteWord != null)
         {
-            context.MyFavoriteWords.Remove(existingFavoriteWord);
-            await SaveAndNotifyAsync("Word is removed from my favorite");
+            localContext.MyFavoriteWords.Remove(existingFavoriteWord);
+            await localContext.SaveChangesAsync();
+            await ShowPopUpAsync("Word is removed from my favorite");
         }
-    }
-
-    private async Task SaveAndNotifyAsync(string message)
-    {
-        await context.SaveChangesAsync();
-        await ShowPopUpAsync(message);
     }
     private async Task ShowPopUpAsync(string message)
     {

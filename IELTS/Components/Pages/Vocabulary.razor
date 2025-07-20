@@ -1,9 +1,10 @@
-﻿@page "/vocabulary"
+@page "/vocabulary"
 @rendermode InteractiveServer
 @using Microsoft.EntityFrameworkCore
 @using IELTS.EntityModels.Models
 @using IELTS.EntityModels
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JS
 @inject IDbContextFactory<IELTS.EntityModels.IELTSStoreDbContext> DbFactory
 <div class="container">
     <div class="row justify-content-md-center">
@@ -19,41 +20,47 @@
             else
             {
                 var word = wordMeanings[index];
-                <div class="card border-success mb-3" style="width: 32rem; height: 17rem">
+                <div class="card border-success mb-3" style="width: 32rem; height: 17rem" tabindex="0" @onkeydown="HandleKeyDown">
                     @if (!showDefinition)
                     {
                         <div class="card-body">
-                            <div class="text-end">
-                                <label class="@wordLabelCss">@wordLabel</label>
+                            <div class="row">
+                                <div class="col form-check">
+                                    <input class="form-check-input" type="checkbox" value="" id="checkDefault" @bind="isFavorite" @bind:event="onchange" disabled="@isFavoriteProcessing" />
+                                </div>
+                                <div class="col text-end">
+                                    <label class="@wordLabelCss">@wordLabel</label>
+                                </div>
                             </div>
                             <div class="text-center">
-                                <h5 class="card-title">@word.Word</h5>
-                                <p>(@word.PartofSpeech)</p>
-                                <p>@word.Pronunciation</p>
+                                <h5 class="card-title">@(word.Word ?? "NA")</h5>
+                                <p>(@(word.PartofSpeech ?? "NA"))</p>
+                                <p>@(word.Pronunciation ?? "NA")</p>
                             </div>
                         </div>
                         <div class="card-footer border-success text-center" style="background-color:#dcdcdc">
                             <button style="display:inline" @onclick="ToggleCard" type="button">Press to see meaning <MudIcon Icon="@Icons.Material.TwoTone.ArrowCircleRight" Style="font-size: 2rem;" /></button>
-                        </div>
+@*                             <input @onkeydown="HandleKeyDown" placeholder="Press → key" />
+ *@                        </div>
                     }
                     else
                     {
                         <div class="card-body">
                             <div>
                                 <p class="card-title" style="color:red; display:inline">Definition:</p>
-                                <p class="card-text" style="display:inline; font-size: 13px;">@word.Definition</p>
+                                <p class="card-text" style="display:inline; font-size: 13px;">@(word.Definition ?? "NA")</p>
                             </div>
                             <div>
                                 <p class="card-text" style="color:red; display:inline">Usage:</p>
-                                <p class="card-text" style="display:inline; font-size: 13px;">@word.Usage</p>
+                                <p class="card-text" style="display:inline; font-size: 13px;">@(word.Usage ?? "NA")</p>
                             </div>
                             <div>
                                 <p class="card-text" style="color:red; display:inline">Related Words:</p>
-                                <p class="card-text" style="display:inline; font-size: 13px;">@word.RelatedWords</p>
+                                <p class="card-text" style="display:inline; font-size: 13px;">@(word.RelatedWords ?? "NA")</p>
                             </div>
                             <div>
                                 <p class="card-text" style="color:red; display:inline">More Info:</p>
-                                <p class="card-text" style="display:inline; font-size: 13px;">@word.MoreInfo</p>
+                                <p class="card-text" style="display:inline; font-size: 13px;">@(word.MoreInfo ?? "NA")</p>
                             </div>
                         </div>
                         <div class="card-footer border-success text-center" style="background-color: #dcdcdc">
@@ -84,6 +91,7 @@
     private bool showDefinition = false;
     private IELTSStoreDbContext context = default!;
     private List<WordMeaning>? wordMeanings;
+    private MyFavoriteWords? myFavoriteWords = new MyFavoriteWords();
     private int currentIndex = 0;
     private Queue<int> replayIndex = new Queue<int>();
     private int displayCountCheckForReplay = 0, queueCount =0, replayCounter = 0;
@@ -91,12 +99,18 @@
     private string wordLabel = "New Word";
     private string wordLabelCss = "word-label";
     private bool flag = false;
+    private bool isFavoriteProcessing = false;
+    private bool _isFavorite;
+    private bool isFavorite
+    {
+        get => _isFavorite;
+        set => UpdateFavorite(value);
+    }
     private void ToggleCard()
     {
         showDefinition = !showDefinition;
     }
-
-    private void NextWord()
+    private async Task NextWord()
     {
 
         showDefinition = false;
@@ -138,15 +152,17 @@
                 }
                 displayCountCheckForReplay = 0;
             }
-
+            isFavorite = await CheckIsFavoriteAsync();
         }
     }
-    private void PrevWord()
+    private async Task PrevWord()
     {
         showDefinition = false;
-        if (wordMeanings is not null && currentIndex != 0 && wordMeanings.Count > 0)
+        if (wordMeanings is not null && currentIndex > 0 && wordMeanings.Count > 0)
         {
-            currentIndex = (currentIndex - 1) % wordMeanings.Count;
+            currentIndex = (currentIndex - 1 + wordMeanings.Count) % wordMeanings.Count;
+            index = currentIndex;
+            isFavorite = await CheckIsFavoriteAsync();
         }
         wordLabel = "Replay Word";
         wordLabelCss = "word-label-replay";
@@ -155,13 +171,81 @@
     {
         replayIndex.Enqueue(currentIndex);
     }
+    private void HandleKeyDown(KeyboardEventArgs e)
+    {
+        // Right Arrow or Enter for NextWord, Left Arrow for PrevWord, Space for ToggleCard
+        if (e.Key == "ArrowRight" || e.Key == "Enter")
+        {
+            NextWord();
+        }
+        else if (e.Key == "ArrowLeft")
+        {
+            PrevWord();
+        }
+        else if (e.Key == "ArrowUp" || e.Key == "ArrowDown")
+        {
+            ToggleCard();
+        }
+    }
     protected override async Task OnInitializedAsync()
     {
         context = DbFactory.CreateDbContext();
         wordMeanings = await context.WordMeanings.ToListAsync();
-        if (wordMeanings is null)
+        if (wordMeanings is null || wordMeanings.Count == 0)
         {
             NavigationManager.NavigateTo("notfound");
         }
+        _isFavorite = await CheckIsFavoriteAsync();
+    }
+    private async Task<bool> CheckIsFavoriteAsync()
+    {
+        await using var checkIsFavoriteContext = DbFactory.CreateDbContext();
+        var word = wordMeanings.ElementAtOrDefault(index);
+        if (word == null) return false;
+
+        return await checkIsFavoriteContext.MyFavoriteWords.AnyAsync(f => f.WordId == word.Id);
+    }
+    private async void UpdateFavorite(bool value)
+    {
+        if (isFavoriteProcessing) return;
+
+        try
+        {
+            isFavoriteProcessing = true;
+            _isFavorite = value;
+            await MyFavoriteWord(value);
+        }
+        finally
+        {
+            isFavoriteProcessing = false;
+            StateHasChanged(); // refresh UI
+        }
+    }
+    private async Task MyFavoriteWord(bool isFavorite)
+    {
+        await using var localContext = DbFactory.CreateDbContext();
+        var word = wordMeanings[index];
+        if (word == null) return;
+
+        var existingFavoriteWord = await localContext.MyFavoriteWords
+            .FirstOrDefaultAsync(m => m.WordId == word.Id);
+
+        if (isFavorite && existingFavoriteWord == null)
+        {
+            var newFavorite = new MyFavoriteWords { WordId = word.Id };
+            localContext.MyFavoriteWords.Add(newFavorite);
+            await localContext.SaveChangesAsync();
+            await ShowPopUpAsync("Word is added to favorite");
+        }
+        else if (!isFavorite && existingFavoriteWord != null)
+        {
+            localContext.MyFavoriteWords.Remove(existingFavoriteWord);
+            await localContext.SaveChangesAsync();
+            await ShowPopUpAsync("Word is removed from my favorite");
+        }
+    }
+    private async Task ShowPopUpAsync(string message)
+    {
+        await JS.InvokeVoidAsync("alert", message);
     }
 }

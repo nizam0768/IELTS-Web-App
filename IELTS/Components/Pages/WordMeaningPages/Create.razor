@@ -67,12 +67,17 @@
 @code {
     [SupplyParameterFromForm]
     private WordMeaning WordMeaning { get; set; } = new();
-
     // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task AddWordMeaning()
     {
         using var context = DbFactory.CreateDbContext();
         WordMeaning.CreatedOn = DateTime.UtcNow;
+        WordMeaning.Word = WordMeaning.Word?.Trim().ToLowerInvariant();
+        var existing = await context.WordMeanings.FirstOrDefaultAsync(m => m.Word.ToLower() == WordMeaning.Word);
+        if (existing != null)
+        {
+            return;
+        }
         context.WordMeanings.Add(WordMeaning);
         await context.SaveChangesAsync();
         NavigationManager.NavigateTo("/wordmeanings");

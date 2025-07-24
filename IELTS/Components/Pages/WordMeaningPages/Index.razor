@@ -1,9 +1,11 @@
 ﻿@page "/wordmeanings"
+@rendermode InteractiveServer
 @using Microsoft.EntityFrameworkCore
 @using IELTS.EntityModels.Models
 @using IELTS.EntityModels
 @using MudBlazor
 @implements IAsyncDisposable
+@inject IJSRuntime JS
 @inject IDbContextFactory<IELTS.EntityModels.IELTSStoreDbContext> DbFactory
 
 <PageTitle>Index</PageTitle>
@@ -15,31 +17,48 @@
         <a class="btn btn-primary" href="wordmeanings/create">Create New</a>
     </div>
 </div>
-<MudDataGrid Items="context.WordMeanings" ColumnResizeMode="ResizeMode.Container">
-    <Columns>
-        <PropertyColumn Property="x => x.Word" />
-        <PropertyColumn Property="x => x.PartofSpeech" />
-        <PropertyColumn Property="x => x.Pronunciation" CellStyle="max-width: 250px; min-width: 200px;" />
-        <PropertyColumn Property="x => x.Definition" CellStyle="max-width: 250px; min-width: 200px;" />
-        <TemplateColumn Title="Actions">
-            <CellTemplate>
-                <MudText>
-                    <a class="link-primary" href="@($"wordmeanings/edit?id={context.Item.Id}")">Edit</a> |
-                    <a class="link-info" href="@($"wordmeanings/details?id={context.Item.Id}")">Details</a> |
-                    <a class="link-danger" href="@($"wordmeanings/delete?id={context.Item.Id}")">Delete</a>
-                </MudText>
-            </CellTemplate>
-        </TemplateColumn>      
-    </Columns>
-    <PagerContent>
-        <MudDataGridPager T="WordMeaning" />
-    </PagerContent>
-</MudDataGrid>
+<table id="IndexCard" class="display">
+    <thead>
+        <tr>
+            <th>Word</th>
+            <th>Part of Speech</th>
+            <th style="max-width: 250px; min-width: 200px;">Pronunciation</th>
+            <th style="max-width: 250px; min-width: 200px;">Definition</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in context.WordMeanings)
+        {
+            <tr>
+                <td>@item.Word</td>
+                <td>@item.PartofSpeech</td>
+                <td style="max-width: 250px; min-width: 200px;">@item.Pronunciation</td>
+                <td style="max-width: 250px; min-width: 200px;">@item.Definition</td>
+                <td>
+                    <a class="link-primary" href="@($"wordmeanings/edit?id={item.Id}")">Edit</a> |
+                    <a class="link-info" href="@($"wordmeanings/details?id={item.Id}")">Details</a> |
+                    <a class="link-danger" href="@($"wordmeanings/delete?id={item.Id}")">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
 
 
 @code {
     private IELTSStoreDbContext context = default!;
     //private IEnumerable<WordMeaning> Elements = new List<WordMeaning>();
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            Console.WriteLine("OnAfterRenderAsync called: " + firstRender);
+            JS.InvokeVoidAsync("applyDataTable", "IndexCard");
+        }
+        return base.OnAfterRenderAsync(firstRender);
+    }
     protected override void OnInitialized()
     {
         context = DbFactory.CreateDbContext();

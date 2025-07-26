@@ -1,13 +1,14 @@
 ﻿@page "/wordmeanings/create"
 @using Microsoft.EntityFrameworkCore
 @using IELTS.EntityModels.Models
+@inject IJSRuntime JS
+@rendermode InteractiveServer
 @inject IDbContextFactory<IELTS.EntityModels.IELTSStoreDbContext> DbFactory
 @inject NavigationManager NavigationManager
 
 <PageTitle>Create</PageTitle>
 
 <h1>Create</h1>
-
 <h2>WordMeaning</h2>
 <hr />
 <div class="row">
@@ -68,6 +69,7 @@
     [SupplyParameterFromForm]
     private WordMeaning WordMeaning { get; set; } = new();
     // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+
     private async Task AddWordMeaning()
     {
         using var context = DbFactory.CreateDbContext();
@@ -76,10 +78,12 @@
         var existing = await context.WordMeanings.FirstOrDefaultAsync(m => m.Word.ToLower() == WordMeaning.Word);
         if (existing != null)
         {
+            await JS.InvokeVoidAsync("blazorInterop.showAlert", "Tap", "I am Dev", "warning", 2000);
+            await Task.Delay(3000);
             return;
         }
         context.WordMeanings.Add(WordMeaning);
         await context.SaveChangesAsync();
-        NavigationManager.NavigateTo("/wordmeanings");
+        NavigationManager.NavigateTo("/wordmeanings?message=added");
     }
 }

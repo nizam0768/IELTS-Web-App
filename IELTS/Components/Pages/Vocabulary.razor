@@ -173,7 +173,6 @@
     }
     private void HandleKeyDown(KeyboardEventArgs e)
     {
-        // Right Arrow or Enter for NextWord, Left Arrow for PrevWord, Space for ToggleCard
         if (e.Key == "ArrowRight" || e.Key == "Enter")
         {
             NextWord();
@@ -246,6 +245,6 @@
     }
     private async Task ShowPopUpAsync(string message)
     {
-        await JS.InvokeVoidAsync("alert", message);
+        await JS.InvokeVoidAsync("blazorInterop.showAlert", "Word", message, "success", 6000);
     }
 }

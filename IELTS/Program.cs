@@ -9,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddMudServices();
-
+builder.Services.AddScoped(sp => new HttpClient());
 // Register the IELTSStoreDbContext with the dependency injection container
 builder.Services.AddDbContextFactory<IELTSStoreDbContext>(options =>
 {

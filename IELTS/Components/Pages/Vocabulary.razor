@@ -26,7 +26,7 @@
                         <div class="card-body">
                             <div class="row">
                                 <div class="col form-check">
-                                    <input class="form-check-input" type="checkbox" value="" id="checkDefault" @bind="isFavorite" @bind:event="onchange" disabled="@isFavoriteProcessing" />
+                                    <input class="form-check-input" type="checkbox" value="" id="checkDefault" data-toggle="tooltip" data-placement="top" title="My Favorite" @bind="isFavorite" @bind:event="onchange" disabled="@isFavoriteProcessing" />
                                 </div>
                                 <div class="col text-end">
                                     <label class="@wordLabelCss">@wordLabel</label>
@@ -173,7 +173,6 @@
     }
     private void HandleKeyDown(KeyboardEventArgs e)
     {
-        // Right Arrow or Enter for NextWord, Left Arrow for PrevWord, Space for ToggleCard
         if (e.Key == "ArrowRight" || e.Key == "Enter")
         {
             NextWord();
@@ -246,6 +245,6 @@
     }
     private async Task ShowPopUpAsync(string message)
     {
-        await JS.InvokeVoidAsync("alert", message);
+        await JS.InvokeVoidAsync("blazorInterop.showAlert", "Word", message, "success", 6000);
     }
 }

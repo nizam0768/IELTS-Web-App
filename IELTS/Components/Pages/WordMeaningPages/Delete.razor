@@ -98,6 +98,6 @@
         using var context = DbFactory.CreateDbContext();
         context.WordMeanings.Remove(wordmeaning!);
         await context.SaveChangesAsync();
-        NavigationManager.NavigateTo("/wordmeanings");
+        NavigationManager.NavigateTo("/wordmeanings?message=deleted");
     }
 }

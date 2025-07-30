@@ -76,7 +76,7 @@
 
                 if (toastText != null)
                 {
-                    await JS.InvokeVoidAsync("blazorInterop.showAlert", "Word", toastText, "success", 6000);
+                    await JS.InvokeVoidAsync("alert", toastText);
                     var cleanUri = NavigationManager.Uri.Split('?')[0];
                     NavigationManager.NavigateTo(cleanUri);
                 }

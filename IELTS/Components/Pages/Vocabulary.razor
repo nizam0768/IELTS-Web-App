@@ -245,6 +245,6 @@
     }
     private async Task ShowPopUpAsync(string message)
     {
-        await JS.InvokeVoidAsync("blazorInterop.showAlert", "Word", message, "success", 6000);
+        await JS.InvokeVoidAsync("alert", message);
     }
 }

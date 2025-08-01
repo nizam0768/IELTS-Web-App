@@ -1,4 +1,4 @@
-﻿window.blazorInterop = window.blazorInterop || {};
+window.blazorInterop = window.blazorInterop || {};
 
 window.blazorInterop.applyDataTable = function (tableId) {
     setTimeout(() => {

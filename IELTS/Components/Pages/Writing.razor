@@ -1,0 +1,121 @@
+﻿@page "/dancingTab"
+@inject HttpClient Http
+@rendermode InteractiveServer
+@using System.Text.Json;
+
+
+
+<div class="container">
+    <h1>Writing Section-A</h1>
+    <label class="btn btn-warning">Bar</label><br /><br />
+    <p>The graph below shows the consuption of three kinds of spreads between 1981 and 2007.</p>
+    <div class="containerimg">
+        <img src="Images/wrt task consumption of Spreads.png" style="height:500px; width:600px;"/>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="d-inline-flex align-items-center gap-2 rounded-container">
+                <i class="fa-solid fa-pen-to-square"></i>
+                <button @onclick="Write">Write on this topic</button>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="d-inline-flex align-items-center gap-2 rounded-container">
+                <i class="fa-regular fa-futbol"></i>
+                <button @onclick="() => SendPrompt(promptScore)" disabled="@isDisabled">Score</button>
+            </div>
+        </div>
+        <div class="col-4 col-md-2">
+            <label class="d-inline-flex align-items-center gap-2 rounded-container">
+                <i class="fa-sharp-duotone fa-solid fa-arrow-up-right-dots"></i>
+                <button>@($"{responseScore}/9")</button>
+            </label>
+        </div>
+    </div>
+    
+    @if (textWrite)
+    {
+        <div>
+            <InputTextArea class="form-control" style="height: 200px" @bind-Value="promptText"></InputTextArea>
+            <br />
+            <div class="d-inline-flex align-items-center gap-2 rounded-container">
+                <i class="fa-solid fa-star-of-life"></i>
+                <button @onclick="() => SendPrompt(promptEnhance)" disabled="@isDisabled">Enhance</button>
+            </div>
+            @* <button class="btn btn-secondary" @onclick="SendPrompt">Send</button> *@
+        </div>
+    }
+
+    @if (textEnhance)
+    {
+        <div>
+            <InputTextArea class="form-control" style="height: 200px; margin-bottom:10px" @bind-Value="responseEnhancement"></InputTextArea>
+        </div>
+    }
+</div>
+
+@code {
+    private bool textEnhance = false;
+    private bool textWrite = false;
+    private bool isDisabled = false;
+    private string promptText = string.Empty;
+    private string responseScore = "0";
+    private string responseEnhancement = "";
+    private const string promptScore = "Score the text with IELTS Band Scale for Writing Section A. Only give me a one digit number nothing else. ";
+    private const string promptEnhance = "Enhance the text in 150 words only that score above 8 band in IELTS writing task A. ";
+    //private const string addPrompt = "";
+    private void Write()
+    {
+        textWrite = true;
+    }
+    private async Task SendPrompt(string addPrompt)
+    {
+        isDisabled = true;
+        var requestPayload = new
+        {
+            messages = new[]
+            {
+                new { role = "user", content = addPrompt + promptText }
+            },
+            model = "meta-llama/Llama-3.3-70B-Instruct:cerebras"
+        };
+
+        var request = new HttpRequestMessage(HttpMethod.Post, "https://router.huggingface.co/v1/chat/completions")
+        {
+            Content = JsonContent.Create(requestPayload)
+        };
+        request.Headers.Add("Authorization", "Bearer HF_Token"); // Add your hugging face generated token in place of HF_Token
+
+        try
+        {
+            var response = await Http.SendAsync(request);
+            var result = await response.Content.ReadFromJsonAsync<JsonElement>();
+
+            if (result.TryGetProperty("choices", out var choices) && choices.GetArrayLength() > 0)
+            {
+                var message = choices[0].GetProperty("message");
+                
+                if (addPrompt.Equals(promptScore))
+                {
+                    textEnhance = false;
+                    responseScore = message.GetProperty("content").GetString();
+                }
+                if (addPrompt.Equals(promptEnhance))
+                {
+                    textEnhance = true;
+                    responseEnhancement = message.GetProperty("content").GetString();
+                }
+            }
+            else
+            {
+                responseEnhancement = "No valid response received.";
+            }
+            isDisabled = false;
+        }
+        catch (Exception ex)
+        {
+            isDisabled = false;
+            responseEnhancement = $"Error: {ex.Message}";
+        }
+    }
+}

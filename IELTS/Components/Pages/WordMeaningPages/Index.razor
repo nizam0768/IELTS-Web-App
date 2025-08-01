@@ -1,9 +1,10 @@
-﻿@page "/wordmeanings"
+@page "/wordmeanings"
 @rendermode InteractiveServer
 @using Microsoft.EntityFrameworkCore
 @using IELTS.EntityModels.Models
 @using IELTS.EntityModels
 @using MudBlazor
+@inject NavigationManager NavigationManager
 @implements IAsyncDisposable
 @inject IJSRuntime JS
 @inject IDbContextFactory<IELTS.EntityModels.IELTSStoreDbContext> DbFactory
@@ -11,7 +12,7 @@
 <PageTitle>Index</PageTitle>
 <div class="row">
     <div class="col-sm-10">
-        <h1>Word Meaning</h1>
+        <h1>Add New Word</h1> 
     </div>
     <div class="col-sm-2">
         <a class="btn btn-primary" href="wordmeanings/create">Create New</a>
@@ -50,16 +51,41 @@
 @code {
     private IELTSStoreDbContext context = default!;
     //private IEnumerable<WordMeaning> Elements = new List<WordMeaning>();
-    protected override Task OnAfterRenderAsync(bool firstRender)
+    private string? toastMessage;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             Console.WriteLine("OnAfterRenderAsync called: " + firstRender);
-            JS.InvokeVoidAsync("applyDataTable", "IndexCard");
+
+            await JS.InvokeVoidAsync("blazorInterop.applyDataTable", "IndexCard");
+            var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+            var query = QueryHelpers.ParseQuery(uri.Query);
+
+            if (query.TryGetValue("message", out var message))
+            {
+                string messageValue = message.ToString(); // ✅ fix here
+
+                string toastText = messageValue switch
+                {
+                    "added" => "Word added successfully",
+                    "deleted" => "Word deleted successfully",
+                    "updated" => "Word updated successfully",
+                    _ => null
+                };
+
+                if (toastText != null)
+                {
+                    await JS.InvokeVoidAsync("alert", toastText);
+                    var cleanUri = NavigationManager.Uri.Split('?')[0];
+                    NavigationManager.NavigateTo(cleanUri);
+                }
+            }
         }
-        return base.OnAfterRenderAsync(firstRender);
     }
-    protected override void OnInitialized()
+
+
+    protected override async Task OnInitializedAsync()
     {
         context = DbFactory.CreateDbContext();
     }

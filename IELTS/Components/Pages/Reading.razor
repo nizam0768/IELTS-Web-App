@@ -1,0 +1,297 @@
+@page "/reading"
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+@using IELTS.EntityModels.Models
+@using IELTS.Services
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="text-center mb-4">IELTS Reading Section</h1>
+        </div>
+    </div>
+    
+    @if (passages.Any())
+    {
+        <div class="row">
+            <!-- Passage Selection Sidebar -->
+            <div class="col-lg-3 col-md-4 col-sm-12 mb-3">
+                <div class="card h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-book-open me-2"></i>
+                            Passages
+                        </h5>
+                    </div>
+                    <div class="card-body p-2">
+                        <div class="list-group list-group-flush">
+                            @foreach (var passage in passages)
+                            {
+                                <button class="list-group-item list-group-item-action @(selectedPassageId == passage.Id ? "active" : "")"
+                                        @onclick="() => SelectPassage(passage.Id)">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">@passage.Title</h6>
+                                        <small class="@(selectedPassageId == passage.Id ? "text-light" : "text-muted")">
+                                            @passage.DifficultyLevel
+                                        </small>
+                                    </div>
+                                    <small class="@(selectedPassageId == passage.Id ? "text-light" : "text-muted")">
+                                        @passage.Questions.Count questions
+                                    </small>
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Content Area -->
+            <div class="col-lg-9 col-md-8 col-sm-12">
+                @if (selectedPassage != null)
+                {
+                    <div class="row">
+                        <!-- Passage Text -->
+                        <div class="col-xl-6 col-lg-12 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header bg-info text-white">
+                                    <h5 class="mb-0">@selectedPassage.Title</h5>
+                                </div>
+                                <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                                    <div class="passage-content">
+                                        @((MarkupString)selectedPassage.Content.Replace("\n", "<br>"))
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Questions -->
+                        <div class="col-xl-6 col-lg-12">
+                            <div class="card h-100">
+                                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">Questions</h5>
+                                    <span class="badge bg-light text-dark">
+                                        @answeredQuestions.Count / @selectedPassage.Questions.Count answered
+                                    </span>
+                                </div>
+                                <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                                    @foreach (var question in selectedPassage.Questions.OrderBy(q => q.OrderNumber))
+                                    {
+                                        <div class="question-container mb-4 p-3 border rounded @(answeredQuestions.ContainsKey(question.Id) ? "bg-light" : "")">
+                                            <h6 class="question-text mb-3">
+                                                <span class="badge bg-secondary me-2">@question.OrderNumber</span>
+                                                @question.QuestionText
+                                            </h6>
+                                            
+                                            @if (question.QuestionType == "Multiple Choice")
+                                            {
+                                                <div class="options">
+                                                    @foreach (var option in GetOptions(question))
+                                                    {
+                                                        <div class="form-check mb-2">
+                                                            <input class="form-check-input" 
+                                                                   type="radio" 
+                                                                   name="question_@question.Id" 
+                                                                   id="question_@(question.Id)_@(option.Key)"
+                                                                   value="@option.Key"
+                                                                   checked="@(answeredQuestions.GetValueOrDefault(question.Id) == option.Key)"
+                                                                   @onchange="@((ChangeEventArgs e) => HandleAnswerChange(question.Id, e.Value?.ToString() ?? ""))" />
+                                                            <label class="form-check-label" for="question_@(question.Id)_@(option.Key)">
+                                                                <strong>@option.Key.</strong> @option.Value
+                                                            </label>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            }
+                                            else if (question.QuestionType == "True/False")
+                                            {
+                                                <div class="options">
+                                                    <div class="form-check mb-2">
+                                                        <input class="form-check-input" 
+                                                               type="radio" 
+                                                               name="question_@question.Id" 
+                                                               id="question_@(question.Id)_true"
+                                                               value="True"
+                                                               checked="@(answeredQuestions.GetValueOrDefault(question.Id) == "True")"
+                                                               @onchange="@((ChangeEventArgs e) => HandleAnswerChange(question.Id, e.Value?.ToString() ?? ""))" />
+                                                        <label class="form-check-label" for="question_@(question.Id)_true">
+                                                            True
+                                                        </label>
+                                                    </div>
+                                                    <div class="form-check mb-2">
+                                                        <input class="form-check-input" 
+                                                               type="radio" 
+                                                               name="question_@question.Id" 
+                                                               id="question_@(question.Id)_false"
+                                                               value="False"
+                                                               checked="@(answeredQuestions.GetValueOrDefault(question.Id) == "False")"
+                                                               @onchange="@((ChangeEventArgs e) => HandleAnswerChange(question.Id, e.Value?.ToString() ?? ""))" />
+                                                        <label class="form-check-label" for="question_@(question.Id)_false">
+                                                            False
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            }
+                                            else if (question.QuestionType == "Fill in the blank")
+                                            {
+                                                <div class="mb-3">
+                                                    <input type="text" 
+                                                           class="form-control" 
+                                                           placeholder="Enter your answer..."
+                                                           value="@answeredQuestions.GetValueOrDefault(question.Id)"
+                                                           @onchange="@((ChangeEventArgs e) => HandleAnswerChange(question.Id, e.Value?.ToString() ?? ""))" />
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                                <div class="card-footer">
+                                    <div class="d-flex justify-content-between">
+                                        <button class="btn btn-outline-secondary" @onclick="ClearAnswers">
+                                            <i class="fas fa-eraser me-1"></i>
+                                            Clear All
+                                        </button>
+                                        <button class="btn btn-primary" @onclick="SubmitAnswers" disabled="@(!answeredQuestions.Any())">
+                                            <i class="fas fa-check me-1"></i>
+                                            Submit Answers
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5">
+                        <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted">Select a passage to begin</h4>
+                        <p class="text-muted">Choose a reading passage from the sidebar to start practicing.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <h4 class="mt-3">Loading passages...</h4>
+        </div>
+    }
+</div>
+
+@code {
+    private List<ReadingPassage> passages = new();
+    private ReadingPassage? selectedPassage;
+    private int selectedPassageId = 0;
+    private Dictionary<int, string> answeredQuestions = new();
+    private string sessionId = Guid.NewGuid().ToString();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPassages();
+        if (passages.Any())
+        {
+            selectedPassageId = passages.First().Id;
+            selectedPassage = passages.First();
+        }
+    }
+
+    private async Task LoadPassages()
+    {
+        // Load all 23 passages from the data service
+        passages = ReadingDataService.GetAllPassages();
+        StateHasChanged();
+    }
+
+    private void SelectPassage(int passageId)
+    {
+        selectedPassageId = passageId;
+        selectedPassage = passages.FirstOrDefault(p => p.Id == passageId);
+        answeredQuestions.Clear(); // Clear answers when switching passages
+        StateHasChanged();
+    }
+
+    private void HandleAnswerChange(int questionId, string answer)
+    {
+        if (!string.IsNullOrWhiteSpace(answer))
+        {
+            answeredQuestions[questionId] = answer;
+        }
+        else if (answeredQuestions.ContainsKey(questionId))
+        {
+            answeredQuestions.Remove(questionId);
+        }
+        StateHasChanged();
+    }
+
+    private void ClearAnswers()
+    {
+        answeredQuestions.Clear();
+        StateHasChanged();
+    }
+
+    private async Task SubmitAnswers()
+    {
+        if (selectedPassage == null)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Please select a passage first.");
+            return;
+        }
+
+        // Check if at least one question has been answered
+        // This fixes the radio button bug - we now properly check for any answered questions
+        var hasAnswers = answeredQuestions.Any(kvp => !string.IsNullOrWhiteSpace(kvp.Value));
+        
+        if (!hasAnswers)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Please answer at least one question before submitting.");
+            return;
+        }
+
+        // Store results in a way that can be passed to evaluation page
+        // In a real app, this would use a state service or pass via query parameters
+        await StoreTestResults();
+        
+        // Navigate to evaluation page
+        Navigation.NavigateTo("/reading/evaluation");
+    }
+
+    private async Task StoreTestResults()
+    {
+        // In a real application, you would store this in a database or session state
+        // For now, we'll use localStorage to persist the results
+        var resultData = new
+        {
+            PassageId = selectedPassage?.Id,
+            PassageTitle = selectedPassage?.Title,
+            UserAnswers = answeredQuestions,
+            SessionId = sessionId,
+            CompletedAt = DateTime.Now
+        };
+        
+        var json = System.Text.Json.JsonSerializer.Serialize(resultData);
+        await JSRuntime.InvokeVoidAsync("localStorage.setItem", "lastTestResults", json);
+    }
+
+    private List<KeyValuePair<string, string>> GetOptions(ReadingQuestion question)
+    {
+        var options = new List<KeyValuePair<string, string>>();
+        
+        if (!string.IsNullOrWhiteSpace(question.OptionA))
+            options.Add(new KeyValuePair<string, string>("A", question.OptionA));
+        if (!string.IsNullOrWhiteSpace(question.OptionB))
+            options.Add(new KeyValuePair<string, string>("B", question.OptionB));
+        if (!string.IsNullOrWhiteSpace(question.OptionC))
+            options.Add(new KeyValuePair<string, string>("C", question.OptionC));
+        if (!string.IsNullOrWhiteSpace(question.OptionD))
+            options.Add(new KeyValuePair<string, string>("D", question.OptionD));
+            
+        return options;
+    }
+
+
+}

@@ -1,0 +1,412 @@
+@page "/reading/evaluation"
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+@using IELTS.EntityModels.Models
+@using IELTS.Services
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="text-center mb-4">Reading Test Results</h1>
+        </div>
+    </div>
+    
+    @if (passage != null && userAnswers != null)
+    {
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h4 class="mb-0">@passage.Title</h4>
+                                <small>Difficulty: @passage.DifficultyLevel</small>
+                            </div>
+                            <div class="col-md-4 text-md-end">
+                                <div class="score-display">
+                                    <span class="badge bg-light text-dark fs-5">
+                                        Score: @score%
+                                    </span>
+                                    <br>
+                                    <small class="text-light">
+                                        @correctAnswers / @totalQuestions correct
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="progress mb-3" style="height: 20px;">
+                                    <div class="progress-bar @GetScoreColorClass()" 
+                                         role="progressbar" 
+                                         style="width: @score%"
+                                         aria-valuenow="@score" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100">
+                                        @score%
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="text-md-end">
+                                    <span class="badge @GetGradeBadgeClass() fs-6">
+                                        @GetGrade()
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-3">
+                            <div class="col-md-4">
+                                <div class="stat-card text-center p-3 border rounded">
+                                    <i class="fas fa-check-circle text-success fa-2x mb-2"></i>
+                                    <h5 class="text-success">@correctAnswers</h5>
+                                    <small class="text-muted">Correct</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="stat-card text-center p-3 border rounded">
+                                    <i class="fas fa-times-circle text-danger fa-2x mb-2"></i>
+                                    <h5 class="text-danger">@(totalQuestions - correctAnswers)</h5>
+                                    <small class="text-muted">Incorrect</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="stat-card text-center p-3 border rounded">
+                                    <i class="fas fa-question-circle text-warning fa-2x mb-2"></i>
+                                    <h5 class="text-warning">@unansweredQuestions</h5>
+                                    <small class="text-muted">Unanswered</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">Detailed Review</h5>
+                    </div>
+                    <div class="card-body">
+                        @foreach (var question in passage.Questions.OrderBy(q => q.OrderNumber))
+                        {
+                            var userAnswer = userAnswers.GetValueOrDefault(question.Id, "");
+                            var isCorrect = !string.IsNullOrWhiteSpace(userAnswer) && 
+                                          string.Equals(userAnswer, question.CorrectAnswer, StringComparison.OrdinalIgnoreCase);
+                            var wasAnswered = !string.IsNullOrWhiteSpace(userAnswer);
+                            
+                            <div class="question-review mb-4 p-4 border rounded @GetQuestionStatusClass(isCorrect, wasAnswered)">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <h6 class="question-text mb-0">
+                                        <span class="badge bg-secondary me-2">@question.OrderNumber</span>
+                                        @question.QuestionText
+                                    </h6>
+                                    <span class="badge @GetAnswerBadgeClass(isCorrect, wasAnswered)">
+                                        @GetAnswerStatus(isCorrect, wasAnswered)
+                                    </span>
+                                </div>
+                                
+                                @if (question.QuestionType == "Multiple Choice")
+                                {
+                                    <div class="options mb-3">
+                                        @foreach (var option in GetOptions(question))
+                                        {
+                                            var isUserChoice = userAnswer == option.Key;
+                                            var isCorrectChoice = question.CorrectAnswer == option.Key;
+                                            
+                                            <div class="form-check mb-2 @GetOptionClass(isUserChoice, isCorrectChoice)">
+                                                <input class="form-check-input" 
+                                                       type="radio" 
+                                                       disabled="true"
+                                                       checked="@isUserChoice" />
+                                                <label class="form-check-label">
+                                                    <strong>@option.Key.</strong> @option.Value
+                                                    @if (isCorrectChoice)
+                                                    {
+                                                        <i class="fas fa-check text-success ms-2"></i>
+                                                    }
+                                                    @if (isUserChoice && !isCorrectChoice)
+                                                    {
+                                                        <i class="fas fa-times text-danger ms-2"></i>
+                                                    }
+                                                </label>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                                else if (question.QuestionType == "True/False")
+                                {
+                                    <div class="options mb-3">
+                                        <div class="form-check mb-2 @GetOptionClass(userAnswer == "True", question.CorrectAnswer == "True")">
+                                            <input class="form-check-input" type="radio" disabled="true" checked="@(userAnswer == "True")" />
+                                            <label class="form-check-label">
+                                                True
+                                                @if (question.CorrectAnswer == "True")
+                                                {
+                                                    <i class="fas fa-check text-success ms-2"></i>
+                                                }
+                                                @if (userAnswer == "True" && question.CorrectAnswer != "True")
+                                                {
+                                                    <i class="fas fa-times text-danger ms-2"></i>
+                                                }
+                                            </label>
+                                        </div>
+                                        <div class="form-check mb-2 @GetOptionClass(userAnswer == "False", question.CorrectAnswer == "False")">
+                                            <input class="form-check-input" type="radio" disabled="true" checked="@(userAnswer == "False")" />
+                                            <label class="form-check-label">
+                                                False
+                                                @if (question.CorrectAnswer == "False")
+                                                {
+                                                    <i class="fas fa-check text-success ms-2"></i>
+                                                }
+                                                @if (userAnswer == "False" && question.CorrectAnswer != "False")
+                                                {
+                                                    <i class="fas fa-times text-danger ms-2"></i>
+                                                }
+                                            </label>
+                                        </div>
+                                    </div>
+                                }
+                                else if (question.QuestionType == "Fill in the blank")
+                                {
+                                    <div class="mb-3">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label class="form-label"><strong>Your Answer:</strong></label>
+                                                <input type="text" class="form-control" value="@userAnswer" disabled />
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label"><strong>Correct Answer:</strong></label>
+                                                <input type="text" class="form-control bg-success text-white" value="@question.CorrectAnswer" disabled />
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                                
+                                @if (!string.IsNullOrWhiteSpace(question.Explanation))
+                                {
+                                    <div class="explanation mt-3 p-3 bg-light rounded">
+                                        <h6 class="text-info"><i class="fas fa-lightbulb me-1"></i>Explanation:</h6>
+                                        <p class="mb-0">@question.Explanation</p>
+                                    </div>
+                                }
+                                
+                                @if (!wasAnswered)
+                                {
+                                    <div class="alert alert-warning mt-3 mb-0">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        <strong>Not Answered:</strong> This question was not answered. 
+                                        The correct answer is: <strong>@question.CorrectAnswer</strong>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-between">
+                            <button class="btn btn-outline-primary" @onclick="RetryTest">
+                                <i class="fas fa-redo me-1"></i>
+                                Retry This Test
+                            </button>
+                            <button class="btn btn-primary" @onclick="BackToReading">
+                                <i class="fas fa-book-open me-1"></i>
+                                Back to Reading Section
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+            <h4>No test results found</h4>
+            <p class="text-muted">Please complete a reading test first.</p>
+            <button class="btn btn-primary" @onclick="BackToReading">
+                <i class="fas fa-book-open me-1"></i>
+                Go to Reading Section
+            </button>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string? PassageId { get; set; }
+    [Parameter] public string? UserAnswersJson { get; set; }
+    
+    private ReadingPassage? passage;
+    private Dictionary<int, string> userAnswers = new();
+    private int score = 0;
+    private int correctAnswers = 0;
+    private int totalQuestions = 0;
+    private int unansweredQuestions = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadEvaluationData();
+    }
+
+    private async Task LoadEvaluationData()
+    {
+        try
+        {
+            // Load test results from localStorage
+            var json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "lastTestResults");
+            
+            if (!string.IsNullOrEmpty(json))
+            {
+                var resultData = System.Text.Json.JsonSerializer.Deserialize<TestResultData>(json);
+                
+                if (resultData != null)
+                {
+                    var passages = ReadingDataService.GetAllPassages();
+                    passage = passages.FirstOrDefault(p => p.Id == resultData.PassageId);
+                    
+                    if (passage != null)
+                    {
+                        userAnswers = resultData.UserAnswers ?? new Dictionary<int, string>();
+                        CalculateScore();
+                    }
+                }
+            }
+            
+            // If no data found, show default message
+            if (passage == null)
+            {
+                // Could show a message or redirect back to reading section
+            }
+        }
+        catch (Exception ex)
+        {
+            // Handle any JSON parsing errors
+            await JSRuntime.InvokeVoidAsync("console.error", "Error loading test results: " + ex.Message);
+        }
+    }
+
+    private class TestResultData
+    {
+        public int PassageId { get; set; }
+        public string? PassageTitle { get; set; }
+        public Dictionary<int, string>? UserAnswers { get; set; }
+        public string? SessionId { get; set; }
+        public DateTime CompletedAt { get; set; }
+    }
+
+    private void CalculateScore()
+    {
+        if (passage == null) return;
+        
+        totalQuestions = passage.Questions.Count;
+        correctAnswers = 0;
+        unansweredQuestions = 0;
+        
+        foreach (var question in passage.Questions)
+        {
+            if (userAnswers.TryGetValue(question.Id, out var userAnswer))
+            {
+                if (!string.IsNullOrWhiteSpace(userAnswer) && 
+                    string.Equals(userAnswer, question.CorrectAnswer, StringComparison.OrdinalIgnoreCase))
+                {
+                    correctAnswers++;
+                }
+            }
+            else
+            {
+                unansweredQuestions++;
+            }
+        }
+        
+        score = totalQuestions > 0 ? (correctAnswers * 100) / totalQuestions : 0;
+    }
+
+    private List<KeyValuePair<string, string>> GetOptions(ReadingQuestion question)
+    {
+        var options = new List<KeyValuePair<string, string>>();
+        
+        if (!string.IsNullOrWhiteSpace(question.OptionA))
+            options.Add(new KeyValuePair<string, string>("A", question.OptionA));
+        if (!string.IsNullOrWhiteSpace(question.OptionB))
+            options.Add(new KeyValuePair<string, string>("B", question.OptionB));
+        if (!string.IsNullOrWhiteSpace(question.OptionC))
+            options.Add(new KeyValuePair<string, string>("C", question.OptionC));
+        if (!string.IsNullOrWhiteSpace(question.OptionD))
+            options.Add(new KeyValuePair<string, string>("D", question.OptionD));
+            
+        return options;
+    }
+
+    private string GetScoreColorClass()
+    {
+        return score switch
+        {
+            >= 80 => "bg-success",
+            >= 60 => "bg-warning",
+            _ => "bg-danger"
+        };
+    }
+
+    private string GetGradeBadgeClass()
+    {
+        return score switch
+        {
+            >= 80 => "bg-success",
+            >= 60 => "bg-warning",
+            _ => "bg-danger"
+        };
+    }
+
+    private string GetGrade()
+    {
+        return score switch
+        {
+            >= 90 => "Excellent",
+            >= 80 => "Good",
+            >= 70 => "Fair",
+            >= 60 => "Pass",
+            _ => "Needs Improvement"
+        };
+    }
+
+    private string GetQuestionStatusClass(bool isCorrect, bool wasAnswered)
+    {
+        if (!wasAnswered) return "border-warning bg-light";
+        return isCorrect ? "border-success bg-success-subtle" : "border-danger bg-danger-subtle";
+    }
+
+    private string GetAnswerBadgeClass(bool isCorrect, bool wasAnswered)
+    {
+        if (!wasAnswered) return "bg-warning";
+        return isCorrect ? "bg-success" : "bg-danger";
+    }
+
+    private string GetAnswerStatus(bool isCorrect, bool wasAnswered)
+    {
+        if (!wasAnswered) return "Not Answered";
+        return isCorrect ? "Correct" : "Incorrect";
+    }
+
+    private string GetOptionClass(bool isUserChoice, bool isCorrectChoice)
+    {
+        if (isCorrectChoice) return "bg-success-subtle border-success";
+        if (isUserChoice && !isCorrectChoice) return "bg-danger-subtle border-danger";
+        return "";
+    }
+
+    private void RetryTest()
+    {
+        Navigation.NavigateTo("/reading");
+    }
+
+    private void BackToReading()
+    {
+        Navigation.NavigateTo("/reading");
+    }
+}

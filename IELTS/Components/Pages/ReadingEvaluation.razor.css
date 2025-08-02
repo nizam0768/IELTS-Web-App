@@ -1,0 +1,192 @@
+.score-display {
+    text-align: center;
+}
+
+.score-display .badge {
+    font-size: 1.1em;
+}
+
+.stat-card {
+    transition: all 0.3s ease;
+    margin-bottom: 15px;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.question-review {
+    transition: all 0.3s ease;
+}
+
+.question-review:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.question-text {
+    line-height: 1.4;
+}
+
+.form-check-label {
+    line-height: 1.4;
+    cursor: default;
+}
+
+.explanation {
+    border-left: 4px solid #17a2b8;
+}
+
+.bg-success-subtle {
+    background-color: rgba(25, 135, 84, 0.1) !important;
+}
+
+.bg-danger-subtle {
+    background-color: rgba(220, 53, 69, 0.1) !important;
+}
+
+.progress {
+    border-radius: 10px;
+}
+
+.progress-bar {
+    border-radius: 10px;
+    transition: width 0.6s ease;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .container-fluid {
+        padding: 10px;
+    }
+    
+    .score-display {
+        margin-top: 15px;
+        text-align: center;
+    }
+    
+    .stat-card {
+        margin-bottom: 20px;
+    }
+    
+    .question-review {
+        padding: 15px !important;
+    }
+    
+    .question-text {
+        font-size: 15px;
+    }
+    
+    .form-check-label {
+        font-size: 14px;
+    }
+    
+    .btn {
+        font-size: 14px;
+        margin-bottom: 10px;
+    }
+    
+    h1 {
+        font-size: 24px;
+    }
+    
+    h4 {
+        font-size: 20px;
+    }
+    
+    h5 {
+        font-size: 18px;
+    }
+    
+    h6 {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 576px) {
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .btn {
+        width: 100%;
+    }
+    
+    .card-header .row {
+        text-align: center;
+    }
+    
+    .card-header .col-md-4 {
+        margin-top: 10px;
+    }
+    
+    .progress {
+        margin-bottom: 20px;
+    }
+    
+    .badge.fs-5, .badge.fs-6 {
+        font-size: 0.9rem !important;
+    }
+    
+    .stat-card h5 {
+        font-size: 1.5rem;
+    }
+    
+    .question-review .d-flex {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .question-review .badge {
+        margin-top: 10px;
+        align-self: flex-end;
+    }
+}
+
+/* Large screens */
+@media (min-width: 1200px) {
+    .question-text {
+        font-size: 17px;
+    }
+    
+    .form-check-label {
+        font-size: 15px;
+    }
+    
+    .explanation {
+        font-size: 15px;
+    }
+}
+
+/* Print styles */
+@media print {
+    .btn, .card-footer {
+        display: none;
+    }
+    
+    .card {
+        border: 1px solid #000;
+        box-shadow: none;
+        page-break-inside: avoid;
+    }
+    
+    .card-header {
+        background-color: #f8f9fa !important;
+        color: #000 !important;
+        border-bottom: 2px solid #000;
+    }
+    
+    .progress-bar {
+        background-color: #000 !important;
+    }
+    
+    .badge {
+        border: 1px solid #000;
+    }
+    
+    .question-review {
+        page-break-inside: avoid;
+        margin-bottom: 20px;
+    }
+}

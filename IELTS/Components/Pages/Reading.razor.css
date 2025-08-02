@@ -1,0 +1,158 @@
+.passage-content {
+    line-height: 1.6;
+    font-size: 16px;
+    color: #333;
+    text-align: justify;
+}
+
+.passage-content p {
+    margin-bottom: 1rem;
+}
+
+.question-container {
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+}
+
+.question-container:hover {
+    border-left-color: #007bff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.question-container.answered {
+    border-left-color: #28a745;
+    background-color: #f8f9fa;
+}
+
+.question-text {
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+.form-check-input:checked {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.form-check-input:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-check-label {
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.list-group-item-action:hover {
+    background-color: #f8f9fa;
+}
+
+.list-group-item-action.active {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.card-header {
+    font-weight: 600;
+}
+
+.badge {
+    font-size: 0.75em;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .container-fluid {
+        padding: 10px;
+    }
+    
+    .card-body {
+        padding: 15px;
+    }
+    
+    .passage-content {
+        font-size: 14px;
+    }
+    
+    .question-text {
+        font-size: 15px;
+    }
+    
+    .form-check-label {
+        font-size: 13px;
+    }
+    
+    .btn {
+        font-size: 14px;
+        padding: 8px 16px;
+    }
+    
+    h1 {
+        font-size: 24px;
+    }
+    
+    h5 {
+        font-size: 18px;
+    }
+    
+    h6 {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 576px) {
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .btn {
+        width: 100%;
+    }
+    
+    .card-header .d-flex {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 5px;
+    }
+    
+    .badge {
+        align-self: flex-end;
+    }
+}
+
+/* Large screens - better spacing */
+@media (min-width: 1200px) {
+    .passage-content {
+        font-size: 17px;
+        line-height: 1.7;
+    }
+    
+    .question-text {
+        font-size: 17px;
+    }
+    
+    .form-check-label {
+        font-size: 15px;
+    }
+}
+
+/* Print styles */
+@media print {
+    .btn, .card-footer {
+        display: none;
+    }
+    
+    .card {
+        border: none;
+        box-shadow: none;
+    }
+    
+    .card-header {
+        background-color: white !important;
+        color: black !important;
+        border-bottom: 2px solid #000;
+    }
+}

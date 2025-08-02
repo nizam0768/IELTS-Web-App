@@ -1,4 +1,4 @@
-﻿using IELTS.Entity_Models.Entity_Config;
+using IELTS.Entity_Models.Entity_Config;
 using IELTS.EntityModels.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -34,11 +34,19 @@ namespace IELTS.EntityModels
         }
         public DbSet<WordMeaning> WordMeanings { get; set; }
         public DbSet<MyFavoriteWords> MyFavoriteWords { get; set; }
+        public DbSet<ReadingPassage> ReadingPassages { get; set; }
+        public DbSet<ReadingQuestion> ReadingQuestions { get; set; }
+        public DbSet<UserReadingAnswer> UserReadingAnswers { get; set; }
+        public DbSet<ReadingTestSession> ReadingTestSessions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasDefaultSchema("dbo");
             modelBuilder.ApplyConfiguration(new WordMeaningConfig());
+            modelBuilder.ApplyConfiguration(new ReadingPassageConfig());
+            modelBuilder.ApplyConfiguration(new ReadingQuestionConfig());
+            modelBuilder.ApplyConfiguration(new UserReadingAnswerConfig());
+            modelBuilder.ApplyConfiguration(new ReadingTestSessionConfig());
             base.OnModelCreating(modelBuilder);
         }
     }

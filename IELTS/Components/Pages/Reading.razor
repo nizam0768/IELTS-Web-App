@@ -1,0 +1,405 @@
+@page "/reading"
+@inject IELTSStoreDbContext DbContext
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
+@using IELTS.EntityModels
+@using IELTS.EntityModels.Models
+@using Microsoft.EntityFrameworkCore
+@using System.Text.Json
+@using MudBlazor
+
+<PageTitle>IELTS Reading Section</PageTitle>
+
+<div class="container-fluid">
+    @if (!testStarted && selectedPassage == null)
+    {
+        <div class="row">
+            <div class="col-12">
+                <MudCard Class="ma-4">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h4">IELTS Reading Practice</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudText Typo="Typo.body1" Class="mb-4">
+                            Choose a reading passage to practice your IELTS reading skills. Each passage comes with various question types including multiple choice, true/false/not given, and matching exercises.
+                        </MudText>
+                        
+                        <MudGrid>
+                            @foreach (var passage in availablePassages)
+                            {
+                                <MudItem xs="12" md="6" lg="4">
+                                    <MudCard Class="cursor-pointer" @onclick="() => SelectPassage(passage)">
+                                        <MudCardContent>
+                                            <MudText Typo="Typo.h6">@passage.Title</MudText>
+                                            <MudText Typo="Typo.body2" Class="mb-2">@passage.Description</MudText>
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Primary">@passage.DifficultyLevel</MudChip>
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Secondary">@passage.Section</MudChip>
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Info">@passage.TimeLimit min</MudChip>
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Success">@passage.Questions.Count questions</MudChip>
+                                        </MudCardContent>
+                                    </MudCard>
+                                </MudItem>
+                            }
+                        </MudGrid>
+                    </MudCardContent>
+                </MudCard>
+            </div>
+        </div>
+    }
+    else if (selectedPassage != null && !testStarted)
+    {
+        <div class="row">
+            <div class="col-12">
+                <MudCard Class="ma-4">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h5">@selectedPassage.Title</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudText Typo="Typo.body1" Class="mb-4">@selectedPassage.Description</MudText>
+                        <MudAlert Severity="Severity.Info" Class="mb-4">
+                            <MudText>Time Limit: @selectedPassage.TimeLimit minutes | Questions: @selectedPassage.Questions.Count | Section: @selectedPassage.Section</MudText>
+                        </MudAlert>
+                        <MudText Typo="Typo.body2" Class="mb-4">
+                            You will have @selectedPassage.TimeLimit minutes to read the passage and answer all questions. 
+                            The timer will start once you click "Start Test".
+                        </MudText>
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="StartTest">Start Test</MudButton>
+                        <MudButton Variant="Variant.Outlined" @onclick="BackToSelection">Back to Selection</MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </div>
+        </div>
+    }
+    else if (testStarted && !testCompleted)
+    {
+        <div class="row">
+            <!-- Timer and Progress -->
+            <div class="col-12">
+                <MudPaper Class="pa-4 mb-4" Elevation="2">
+                    <div class="d-flex justify-space-between align-center">
+                        <MudText Typo="Typo.h6">@selectedPassage.Title</MudText>
+                        <div class="d-flex align-center gap-4">
+                            <MudText Typo="Typo.body1">Progress: @answeredQuestions/@selectedPassage.Questions.Count</MudText>
+                            <MudText Typo="Typo.h6" Style="@(timeRemaining.TotalMinutes < 5 ? "color: red;" : "")">
+                                Time: @timeRemaining.ToString(@"mm\:ss")
+                            </MudText>
+                        </div>
+                    </div>
+                    <MudProgressLinear Value="@progressPercentage" Color="Color.Primary" Class="mt-2" />
+                </MudPaper>
+            </div>
+
+            <!-- Reading Passage -->
+            <div class="col-md-6">
+                <MudPaper Class="pa-4" Elevation="2" Style="height: 70vh; overflow-y: auto;">
+                    <MudText Typo="Typo.h6" Class="mb-3">Reading Passage</MudText>
+                    <MudText Typo="Typo.body1" Style="white-space: pre-line; line-height: 1.6;">
+                        @selectedPassage.Content
+                    </MudText>
+                </MudPaper>
+            </div>
+
+            <!-- Questions -->
+            <div class="col-md-6">
+                <MudPaper Class="pa-4" Elevation="2" Style="height: 70vh; overflow-y: auto;">
+                    <MudText Typo="Typo.h6" Class="mb-3">Questions</MudText>
+                    
+                    @foreach (var question in selectedPassage.Questions.OrderBy(q => q.QuestionNumber))
+                    {
+                        <MudCard Class="mb-4" Elevation="1">
+                            <MudCardContent>
+                                <MudText Typo="Typo.subtitle1" Class="mb-2">
+                                    Question @question.QuestionNumber
+                                </MudText>
+                                <MudText Typo="Typo.body1" Class="mb-3">
+                                    @question.QuestionText
+                                </MudText>
+
+                                @if (question.QuestionType == "MultipleChoice")
+                                {
+                                    var options = JsonSerializer.Deserialize<List<string>>(question.Options ?? "[]");
+                                    <MudRadioGroup T="string" @bind-SelectedOption="userAnswers[question.Id]">
+                                        @foreach (var option in options)
+                                        {
+                                            <MudRadio T="string" Option="@option" Color="Color.Primary">@option</MudRadio>
+                                        }
+                                    </MudRadioGroup>
+                                }
+                                else if (question.QuestionType == "TrueFalse")
+                                {
+                                    <MudRadioGroup T="string" @bind-SelectedOption="userAnswers[question.Id]">
+                                        <MudRadio T="string" Option="True" Color="Color.Primary">True</MudRadio>
+                                        <MudRadio T="string" Option="False" Color="Color.Primary">False</MudRadio>
+                                        <MudRadio T="string" Option="Not Given" Color="Color.Primary">Not Given</MudRadio>
+                                    </MudRadioGroup>
+                                }
+                                else if (question.QuestionType == "FillInTheBlank" || question.QuestionType == "ShortAnswer")
+                                {
+                                    <MudTextField @bind-Value="userAnswers[question.Id]" 
+                                                  Label="Your Answer" 
+                                                  Variant="Variant.Outlined" 
+                                                  FullWidth="true" />
+                                }
+                            </MudCardContent>
+                        </MudCard>
+                    }
+
+                    <MudButton Variant="Variant.Filled" 
+                               Color="Color.Success" 
+                               FullWidth="true" 
+                               Class="mt-4"
+                               @onclick="SubmitTest">
+                        Submit Test
+                    </MudButton>
+                </MudPaper>
+            </div>
+        </div>
+    }
+    else if (testCompleted)
+    {
+        <div class="row">
+            <div class="col-12">
+                <MudCard Class="ma-4">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h4">Test Results</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudGrid>
+                            <MudItem xs="12" md="6">
+                                <MudPaper Class="pa-4" Elevation="2">
+                                    <MudText Typo="Typo.h6" Class="mb-2">Overall Score</MudText>
+                                    <MudText Typo="Typo.h4" Color="Color.Primary">@correctAnswers/@totalQuestions</MudText>
+                                    <MudText Typo="Typo.body1">@((correctAnswers * 100.0 / totalQuestions).ToString("F1"))%</MudText>
+                                    @if (!string.IsNullOrEmpty(estimatedBandScore))
+                                    {
+                                        <MudText Typo="Typo.h6" Color="Color.Success">Estimated Band: @estimatedBandScore</MudText>
+                                    }
+                                </MudPaper>
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudPaper Class="pa-4" Elevation="2">
+                                    <MudText Typo="Typo.h6" Class="mb-2">Time Performance</MudText>
+                                    <MudText Typo="Typo.body1">Time Used: @timeSpent.ToString(@"mm\:ss")</MudText>
+                                    <MudText Typo="Typo.body1">Time Limit: @selectedPassage.TimeLimit:00 minutes</MudText>
+                                </MudPaper>
+                            </MudItem>
+                        </MudGrid>
+
+                        <MudDivider Class="my-4" />
+
+                        <MudText Typo="Typo.h6" Class="mb-3">Question Review</MudText>
+                        @foreach (var question in selectedPassage.Questions.OrderBy(q => q.QuestionNumber))
+                        {
+                            var userAnswer = userAnswers.ContainsKey(question.Id) ? userAnswers[question.Id] : "";
+                            var isCorrect = string.Equals(userAnswer, question.CorrectAnswer, StringComparison.OrdinalIgnoreCase);
+                            
+                            <MudCard Class="mb-3" Elevation="1">
+                                <MudCardContent>
+                                    <div class="d-flex align-center mb-2">
+                                        <MudText Typo="Typo.subtitle1" Class="mr-2">Question @question.QuestionNumber</MudText>
+                                        <MudChip T="string" Size="Size.Small" Color="@(isCorrect ? Color.Success : Color.Error)">
+                                            @(isCorrect ? "Correct" : "Incorrect")
+                                        </MudChip>
+                                    </div>
+                                    <MudText Typo="Typo.body2" Class="mb-2">@question.QuestionText</MudText>
+                                    <MudText Typo="Typo.body2" Class="mb-1"><strong>Your Answer:</strong> @(string.IsNullOrEmpty(userAnswer) ? "Not answered" : userAnswer)</MudText>
+                                    <MudText Typo="Typo.body2" Class="mb-2"><strong>Correct Answer:</strong> @question.CorrectAnswer</MudText>
+                                    @if (!string.IsNullOrEmpty(question.Explanation))
+                                    {
+                                        <MudText Typo="Typo.body2" Style="font-style: italic;">@question.Explanation</MudText>
+                                    }
+                                </MudCardContent>
+                            </MudCard>
+                        }
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="TakeAnotherTest">Take Another Test</MudButton>
+                        <MudButton Variant="Variant.Outlined" @onclick="BackToSelection">Back to Selection</MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<ReadingPassage> availablePassages = new();
+    private ReadingPassage? selectedPassage;
+    private bool testStarted = false;
+    private bool testCompleted = false;
+    private DateTime testStartTime;
+    private TimeSpan timeRemaining;
+    private TimeSpan timeSpent;
+    private System.Threading.Timer? timer;
+    private Dictionary<int, string> userAnswers = new();
+    private int correctAnswers = 0;
+    private int totalQuestions = 0;
+    private int answeredQuestions = 0;
+    private double progressPercentage = 0;
+    private string estimatedBandScore = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAvailablePassages();
+    }
+
+    private async Task LoadAvailablePassages()
+    {
+        availablePassages = await DbContext.ReadingPassages
+            .Include(p => p.Questions)
+            .Where(p => p.DeletedOn == null)
+            .ToListAsync();
+    }
+
+    private void SelectPassage(ReadingPassage passage)
+    {
+        selectedPassage = passage;
+        userAnswers.Clear();
+        // Initialize user answers dictionary
+        foreach (var question in passage.Questions)
+        {
+            userAnswers[question.Id] = "";
+        }
+    }
+
+    private void StartTest()
+    {
+        testStarted = true;
+        testStartTime = DateTime.UtcNow;
+        timeRemaining = TimeSpan.FromMinutes(selectedPassage!.TimeLimit);
+        totalQuestions = selectedPassage.Questions.Count;
+        
+        // Start timer
+        timer = new System.Threading.Timer(UpdateTimer, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
+    }
+
+    private void UpdateTimer(object? state)
+    {
+        var elapsed = DateTime.UtcNow - testStartTime;
+        var totalTime = TimeSpan.FromMinutes(selectedPassage!.TimeLimit);
+        timeRemaining = totalTime - elapsed;
+        
+        if (timeRemaining <= TimeSpan.Zero)
+        {
+            timeRemaining = TimeSpan.Zero;
+            InvokeAsync(async () =>
+            {
+                await SubmitTest();
+                StateHasChanged();
+            });
+        }
+        else
+        {
+            // Update progress
+            answeredQuestions = userAnswers.Values.Count(a => !string.IsNullOrWhiteSpace(a));
+            progressPercentage = (double)answeredQuestions / totalQuestions * 100;
+            
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task SubmitTest()
+    {
+        timer?.Dispose();
+        testCompleted = true;
+        timeSpent = DateTime.UtcNow - testStartTime;
+        
+        // Calculate score
+        correctAnswers = 0;
+        foreach (var question in selectedPassage!.Questions)
+        {
+            if (userAnswers.ContainsKey(question.Id))
+            {
+                var userAnswer = userAnswers[question.Id];
+                if (string.Equals(userAnswer, question.CorrectAnswer, StringComparison.OrdinalIgnoreCase))
+                {
+                    correctAnswers++;
+                }
+            }
+        }
+
+        // Calculate estimated IELTS band score (simplified)
+        var percentage = (double)correctAnswers / totalQuestions * 100;
+        estimatedBandScore = percentage switch
+        {
+            >= 90 => "9.0",
+            >= 80 => "8.0-8.5",
+            >= 70 => "7.0-7.5",
+            >= 60 => "6.0-6.5",
+            >= 50 => "5.0-5.5",
+            >= 40 => "4.0-4.5",
+            _ => "3.0-3.5"
+        };
+
+        // Save test session to database
+        await SaveTestSession();
+        
+        StateHasChanged();
+    }
+
+    private async Task SaveTestSession()
+    {
+        try
+        {
+            var session = new ReadingTestSession
+            {
+                ReadingPassageId = selectedPassage!.Id,
+                UserId = "anonymous", // You can implement user authentication later
+                StartTime = testStartTime,
+                EndTime = DateTime.UtcNow,
+                TotalQuestions = totalQuestions,
+                CorrectAnswers = correctAnswers,
+                TotalPoints = correctAnswers,
+                ScorePercentage = (double)correctAnswers / totalQuestions * 100,
+                TotalTimeSpent = timeSpent,
+                IsCompleted = true,
+                IELTSBandScore = estimatedBandScore
+            };
+
+            DbContext.ReadingTestSessions.Add(session);
+            await DbContext.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            // Handle error - in production, you'd want proper logging
+            await JSRuntime.InvokeVoidAsync("console.error", "Error saving test session: " + ex.Message);
+        }
+    }
+
+    private void TakeAnotherTest()
+    {
+        ResetTest();
+    }
+
+    private void BackToSelection()
+    {
+        ResetTest();
+    }
+
+    private void ResetTest()
+    {
+        timer?.Dispose();
+        selectedPassage = null;
+        testStarted = false;
+        testCompleted = false;
+        userAnswers.Clear();
+        correctAnswers = 0;
+        totalQuestions = 0;
+        answeredQuestions = 0;
+        progressPercentage = 0;
+        estimatedBandScore = "";
+    }
+
+    public void Dispose()
+    {
+        timer?.Dispose();
+    }
+}

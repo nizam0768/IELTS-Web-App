@@ -39,7 +39,7 @@
                             </div>
                         </div>
                         <div class="card-footer border-success text-center" style="background-color:#dcdcdc">
-                            <button style="display:inline" @onclick="ToggleCard" type="button">Press to see meaning <MudIcon Icon="@Icons.Material.TwoTone.ArrowCircleRight" Style="font-size: 2rem;" /></button>
+                            <button style="display:inline" @onclick="ToggleCard" type="button">Press to see meaning <i class="fas fa-arrow-circle-right" style="font-size: 2rem;"></i></button>
 @*                             <input @onkeydown="HandleKeyDown" placeholder="Press → key" />
  *@                        </div>
                     }
@@ -66,13 +66,13 @@
                         <div class="card-footer border-success text-center" style="background-color: #dcdcdc">
                             <div class="row row-cols-4">
                                 <div class="col">
-                                    <button @onclick="PrevWord" type="button"><MudIcon Icon="@Icons.Material.Filled.ChevronLeft" Style="font-size: 2rem;" />Prev</button>
+                                    <button @onclick="PrevWord" type="button"><i class="fas fa-chevron-left" style="font-size: 2rem;"></i>Prev</button>
                                 </div>
                                 <div class="col-6">
-                                    <button @onclick="ToggleCard" type="button"><MudIcon Icon="@Icons.Material.TwoTone.ArrowCircleLeft" Style="font-size: 2rem;" />&nbsp Press to see word</button>
+                                    <button @onclick="ToggleCard" type="button"><i class="fas fa-arrow-circle-left" style="font-size: 2rem;"></i>&nbsp Press to see word</button>
                                 </div>
                                 <div class="col">
-                                    <button @onclick="NextWord" type="button">Next<MudIcon Icon="@Icons.Material.Filled.ChevronRight" Style="font-size: 2rem;" /></button>
+                                    <button @onclick="NextWord" type="button">Next<i class="fas fa-chevron-right" style="font-size: 2rem;"></i></button>
                                 </div>
                             </div>
                         </div>

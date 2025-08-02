@@ -1,4 +1,4 @@
-﻿@page "/"
+@page "/"
 @rendermode InteractiveServer
 <div class="d-flex justify-content-center align-items-center">
     <h1>Welcome to vocabulary card</h1>
@@ -21,7 +21,7 @@
                 </div>
             </div>
             <div class="card-footer border-success text-center" style="background-color:#dcdcdc">
-                <button style="display:inline" @onclick="ToggleCard">Press to see meaning <MudIcon Icon="@Icons.Material.TwoTone.ArrowCircleRight" Style="font-size: 2rem;" /></button>
+                <button style="display:inline" @onclick="ToggleCard">Press to see meaning <i class="fas fa-arrow-circle-right" style="font-size: 2rem;"></i></button>
             </div>
         }
         else
@@ -45,7 +45,7 @@
                 </div>
             </div>
             <div class="card-footer border-success text-center" style="background-color: #dcdcdc">
-                <button @onclick="ToggleCard" type="button"><MudIcon Icon="@Icons.Material.TwoTone.ArrowCircleLeft" Style="font-size: 2rem;" />&nbsp Press to see word</button>
+                <button @onclick="ToggleCard" type="button"><i class="fas fa-arrow-circle-left" style="font-size: 2rem;"></i>&nbsp Press to see word</button>
             </div>
         }
     </div>

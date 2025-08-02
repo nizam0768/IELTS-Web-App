@@ -76,6 +76,22 @@
         "js/fontawesome-iconpicker.min.js",
         "css/fontawesome-iconpicker.min.css"
       ]
+    },
+    {
+      "library": "font-awesome@6.4.0",
+      "destination": "wwwroot/lib/font-awesome/",
+      "files": [
+        "css/all.min.css",
+        "webfonts/fa-solid-900.woff2",
+        "webfonts/fa-solid-900.woff",
+        "webfonts/fa-solid-900.ttf",
+        "webfonts/fa-regular-400.woff2",
+        "webfonts/fa-regular-400.woff",
+        "webfonts/fa-regular-400.ttf",
+        "webfonts/fa-brands-400.woff2",
+        "webfonts/fa-brands-400.woff",
+        "webfonts/fa-brands-400.ttf"
+      ]
     }
   ]
 }

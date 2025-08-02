@@ -1,5 +1,6 @@
 using IELTS.Components;
 using IELTS.EntityModels;
+using IELTS.Data;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
 
@@ -35,5 +36,21 @@ app.UseStaticFiles();
 app.UseAntiforgery();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+// Seed reading data
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<IELTSStoreDbContext>();
+    try
+    {
+        await context.Database.EnsureCreatedAsync();
+        await ReadingSampleData.SeedReadingData(context);
+    }
+    catch (Exception ex)
+    {
+        // Log error in production
+        Console.WriteLine($"Error seeding reading data: {ex.Message}");
+    }
+}
 
 app.Run();
